@@ -1,0 +1,39 @@
+{
+  "name": "ga",
+  "version": "1.0.0",
+  "description": "sample of solving problem with genetic algorithm",
+  "main": "ga.ts",
+  "scripts": {
+    "!test": "------- run self-test with jest -----",
+    "test": "jest --config=jest.config.json",
+    "test:dev": "jest --config=jest.config.json --watchAll",
+    "test:watch": "jest --config=jest.config.json --watch",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
+  },
+  "keywords": [
+      "genetic algorithm"
+  ],
+  "author": "Steve (steve@lemoncloud.io)",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^24.9.1",
+    "@types/supertest": "^2.0.10",
+    "@typescript-eslint/eslint-plugin": "^1.7.0",
+    "@typescript-eslint/parser": "^1.7.0",
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^24.8.0",
+    "lint-staged": "^8.1.6",
+    "prettier": "^1.18.2",
+    "superagent": "^5.3.1",
+    "supertest": "^4.0.2",
+    "ts-jest": "^24.3.0",
+    "ts-node": "8.1.0",
+    "tsconfig-paths": "3.8.0",
+    "tslint": "5.16.0",
+    "ttypescript": "^1.5.10",
+    "typescript": "^3.9.6"
+  }
+}
