@@ -3,6 +3,6 @@
 genetic algorithm experimental
 
 
-# LICENSE
+## LICENSE
 
-MIT
+[MIT](http://opensource.org/licenses/MIT)
