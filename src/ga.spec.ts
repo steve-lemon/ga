@@ -67,9 +67,9 @@ describe('gs', () => {
 
         //! test travels()
         // eslint-disable-next-line prettier/prettier
-        expect2(() => $tsm.travels([0, 1])).toEqual($tsm.distance({ i: 1, x: 9860, y: 14152 }, { i: 2, x: 9396, y: 14616 }));
+        expect2(() => $tsm.travels([0, 1])).toEqual($tsm.distance({ i: 1, x: 9860, y: 14152 }, { i: 2, x: 9396, y: 14616 }) * 2);
         // eslint-disable-next-line prettier/prettier
-        expect2(() => $tsm.travels([1, 0])).toEqual($tsm.distance({ i: 1, x: 9860, y: 14152 }, { i: 2, x: 9396, y: 14616 }));
+        expect2(() => $tsm.travels([1, 0])).toEqual($tsm.distance({ i: 1, x: 9860, y: 14152 }, { i: 2, x: 9396, y: 14616 }) * 2);
         // const inOrder = Array.from(Array(127)).map((_, i) => i);
         // const inOrder = [...Array(127).keys()];
         const inOrder = $_.range(0, 127); //! use lodash.
