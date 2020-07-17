@@ -25,8 +25,8 @@ export interface TspInfo {
     nodes: number[][];
 }
 
-const secret = [1, 3, 4, 5];
-const secret_len = secret.length;
+const SECRET = [1, 0, 4, 9];
+const SECRET_LET = SECRET.length;
 
 const random = {
     randint: (a: number, b: number): number => {
@@ -37,7 +37,7 @@ const random = {
 };
 
 export const fitness = (sol: Solution, sec?: number[]) => {
-    sec = sec || secret;
+    sec = sec || SECRET;
     const fits = sec.map((c, i) => (c == sol.sol[i] ? 1 : 0)).filter(_ => _ && _);
     return fits.length;
 };
@@ -72,7 +72,7 @@ export const mutate = (solution: Solution, rate: number): Solution => {
 export const find = (pop: number, gen: number): Solution => {
     // initialise random population
     let population: Solution[] = Array.from(Array(pop)).map(_ => {
-        const sol = random_solution(secret_len);
+        const sol = random_solution(SECRET_LET);
         sol.fit = fitness(sol);
         return sol;
     });
@@ -103,7 +103,7 @@ export const find = (pop: number, gen: number): Solution => {
         if (population[0].fit > best.fit) best = population[0];
 
         _log(`! best@${g} =`, best);
-        if (best.fit == secret_len) break;
+        if (best.fit >= SECRET_LET) break;
     }
 
     //! returns..
@@ -153,3 +153,67 @@ export const loaodTsp = (name: string): TspInfo => {
         throw e;
     }
 };
+
+/**
+ * info of city.
+ */
+export interface City {
+    i?: number;
+    x: number;
+    y: number;
+}
+
+/**
+ * class: `TravelingSalesMan`
+ * - to solve traveling-salesman-problem.
+ */
+export class TravelingSalesMan {
+    public readonly cities: City[];
+    /**
+     * default constructor
+     * @param nodes    list of position info of node
+     */
+    public constructor(nodes: number[][]) {
+        this.cities = TravelingSalesMan.transform(nodes);
+    }
+
+    /**
+     * transform number[][] to city[]
+     */
+    public static transform = (nodes: number[][]): City[] =>
+        nodes.map((node, i) => {
+            node = node || []; // prevent null error.
+            if (node.length < 2) throw Error(`nodes[${i}].len[${node.length}] < 2`);
+            const city = { i, x: 0, y: 0 };
+            if (node.length < 3) {
+                city.x = node[0];
+                city.y = node[1];
+            } else {
+                city.i = node[0];
+                city.x = node[1];
+                city.y = node[2];
+            }
+            return city;
+        });
+
+    /**
+     * get euklidian distance between a & b
+     */
+    public distance = (a: City, b: City) => Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+
+    /**
+     * travels each index, then get the total route distance.
+     *
+     * @param indices list of index in cities
+     */
+    public travels = (indices: number[]) =>
+        indices
+            .map((a, i) => {
+                //! get next city-index.
+                const b = indices[i + 1];
+                const A = a !== undefined ? this.cities[a] : null;
+                const B = b !== undefined ? this.cities[b] : null;
+                return A && B ? this.distance(A, B) : 0;
+            })
+            .reduce((T, d) => T + d, 0);
+}

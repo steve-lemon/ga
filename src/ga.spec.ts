@@ -1,5 +1,12 @@
-import { expect2, loadDataYml } from 'lemon-core';
-import { fitness, random_solution, crossover, find, loaodTsp } from './ga';
+/**
+ * file: `ga.spec.ts`
+ * - spec for ga
+ *
+ * @author      Steve <steve@lemoncloud.io>
+ * @date        2020-07-17 initial version.
+ */
+import { expect2 } from 'lemon-core';
+import { fitness, random_solution, crossover, find, loaodTsp, TravelingSalesMan } from './ga';
 
 describe('gs', () => {
     it('should pass all', () => {
@@ -22,7 +29,7 @@ describe('gs', () => {
         });
 
         //! find()
-        expect2(() => find(10, 50)).toEqual({ fit: 4, sol: [1, 3, 4, 5] });
+        expect2(() => find(10, 50)).toEqual({ fit: 4, sol: [1, 0, 4, 9] });
     });
 
     it('should pass TSP tools', () => {
@@ -46,5 +53,27 @@ describe('gs', () => {
         expect2(() => $tsp.nodes[0]).toEqual([1, 9860, 14152]);
         expect2(() => $tsp.nodes[1]).toEqual([2, 9396, 14616]);
         expect2(() => $tsp.nodes[126]).toEqual([127, 3248, 14152]);
+    });
+
+    it('should pass TravelingSalesMan', () => {
+        const $tsp = loaodTsp('bier127');
+        expect2(() => $tsp, 'name').toEqual({ name: 'bier127' });
+
+        const $tsm = new TravelingSalesMan($tsp.nodes);
+        expect2(() => $tsm.distance({ x: 1, y: 2 }, { x: 3, y: 4 })).toEqual(Math.sqrt(2 ** 2 + 2 ** 2));
+        expect2(() => $tsm.cities[0]).toEqual({ i: 1, x: 9860, y: 14152 });
+        expect2(() => $tsm.cities[1]).toEqual({ i: 2, x: 9396, y: 14616 });
+        expect2(() => $tsm.cities[126]).toEqual({ i: 127, x: 3248, y: 14152 });
+
+        //! test travels()
+        // eslint-disable-next-line prettier/prettier
+        expect2(() => $tsm.travels([0, 1])).toEqual($tsm.distance({ i: 1, x: 9860, y: 14152 }, { i: 2, x: 9396, y: 14616 }));
+        // eslint-disable-next-line prettier/prettier
+        expect2(() => $tsm.travels([1, 0])).toEqual($tsm.distance({ i: 1, x: 9860, y: 14152 }, { i: 2, x: 9396, y: 14616 }));
+        const inOrder = Array.from(Array(127)).map((_, i) => i);
+        expect2(() => inOrder.length).toEqual(127);
+        expect2(() => inOrder.slice(0, 3)).toEqual([0, 1, 2]);
+        expect2(() => inOrder.slice(125)).toEqual([125, 126]);
+        expect2(() => Math.round($tsm.travels(inOrder) * 100)).toEqual(393998.28 * 100);
     });
 });
