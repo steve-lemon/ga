@@ -5,7 +5,7 @@
  * @author      Steve <steve@lemoncloud.io>
  * @date        2020-07-17 initial version.
  */
-import { _log, _inf, _err, $U } from 'lemon-core';
+import { _log, _inf, _err, $U, $_ } from 'lemon-core';
 import fs from 'fs';
 // const _log = console.log;
 // const _inf = console.info;
@@ -43,7 +43,9 @@ export const fitness = (sol: Solution, sec?: number[]) => {
 };
 
 export const random_solution = (len: number): Solution => {
-    const sol = Array.from(Array(len)).map(_ => random.randint(0, 10));
+    // const sol = Array.from(Array(len)).map(_ => random.randint(0, 10));
+    // const sol = [...Array(len).keys()].map(() => random.randint(0, 10));
+    const sol = $_.range(len).map(() => random.randint(0, 10));
     return { fit: 0, sol };
 };
 
@@ -71,7 +73,7 @@ export const mutate = (solution: Solution, rate: number): Solution => {
 
 export const find = (pop: number, gen: number): Solution => {
     // initialise random population
-    let population: Solution[] = Array.from(Array(pop)).map(_ => {
+    let population: Solution[] = $_.range(pop).map(() => {
         const sol = random_solution(SECRET_LET);
         sol.fit = fitness(sol);
         return sol;

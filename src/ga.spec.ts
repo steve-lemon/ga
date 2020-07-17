@@ -5,7 +5,7 @@
  * @author      Steve <steve@lemoncloud.io>
  * @date        2020-07-17 initial version.
  */
-import { expect2 } from 'lemon-core';
+import { expect2, $_ } from 'lemon-core';
 import { fitness, random_solution, crossover, find, loaodTsp, TravelingSalesMan } from './ga';
 
 describe('gs', () => {
@@ -70,7 +70,9 @@ describe('gs', () => {
         expect2(() => $tsm.travels([0, 1])).toEqual($tsm.distance({ i: 1, x: 9860, y: 14152 }, { i: 2, x: 9396, y: 14616 }));
         // eslint-disable-next-line prettier/prettier
         expect2(() => $tsm.travels([1, 0])).toEqual($tsm.distance({ i: 1, x: 9860, y: 14152 }, { i: 2, x: 9396, y: 14616 }));
-        const inOrder = Array.from(Array(127)).map((_, i) => i);
+        // const inOrder = Array.from(Array(127)).map((_, i) => i);
+        // const inOrder = [...Array(127).keys()];
+        const inOrder = $_.range(0, 127); //! use lodash.
         expect2(() => inOrder.length).toEqual(127);
         expect2(() => inOrder.slice(0, 3)).toEqual([0, 1, 2]);
         expect2(() => inOrder.slice(125)).toEqual([125, 126]);
