@@ -5,17 +5,19 @@
   "main": "ga.ts",
   "scripts": {
     "!test": "------- run self-test with jest -----",
-    "test": "jest --config=jest.config.json",
-    "test:dev": "jest --config=jest.config.json --watchAll",
-    "test:watch": "jest --config=jest.config.json --watch",
+    "test": "LS=1 jest --config=jest.config.json",
+    "test:dev": "LS=1 jest --config=jest.config.json --watchAll",
+    "test:watch": "LS=1 jest --config=jest.config.json --watch",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
   },
   "keywords": [
-      "genetic algorithm"
+    "genetic algorithm"
   ],
   "author": "Steve (steve@lemoncloud.io)",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "lemon-core": "^2.2.5"
+  },
   "devDependencies": {
     "@types/jest": "^24.9.1",
     "@types/supertest": "^2.0.10",

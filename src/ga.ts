@@ -5,12 +5,24 @@
  * @author      Steve <steve@lemoncloud.io>
  * @date        2020-07-17 initial version.
  */
-const _log = console.log;
-const _inf = console.info;
+import { _log, _inf, _err, $U } from 'lemon-core';
+import fs from 'fs';
+// const _log = console.log;
+// const _inf = console.info;
+// const _err = console.error;
 
 export interface Solution {
     fit?: number;
     sol: number[];
+}
+
+export interface TspInfo {
+    name?: string;
+    comment?: string;
+    type?: string;
+    dimension?: number;
+    edge_weight_type?: string;
+    nodes: number[][];
 }
 
 const secret = [1, 3, 4, 5];
@@ -96,4 +108,48 @@ export const find = (pop: number, gen: number): Solution => {
 
     //! returns..
     return best;
+};
+
+//! load json in sync.
+export const loadJsonSync = (name: string, def: any = {}) => {
+    name = !name.startsWith('./') ? `./${name}` : name;
+    try {
+        const rawdata = fs.readFileSync(name);
+        return JSON.parse(rawdata.toString());
+    } catch (e) {
+        if (def) def.error = `${e.message || e}`;
+        return def;
+    }
+};
+
+export const loaodTsp = (name: string): TspInfo => {
+    name = !name.startsWith('./') ? `./data/${name}${name.endsWith('.tsp') ? '' : '.tsp'}` : name;
+    try {
+        const rawdata = fs.readFileSync(name).toString();
+        const lines = rawdata.split(`\n`);
+        let inData = false;
+        const nodes: number[][] = [];
+        const ret: TspInfo = { nodes };
+        for (let i = 0; i < lines.length; i++) {
+            const line = `${lines[i]}`.trim();
+            if (line.startsWith('#')) continue;
+            if (line == 'NODE_COORD_SECTION') inData = true;
+            else if (line == 'EOF') inData = false;
+            else if (inData) {
+                const re = /([0-9]+)\s+([0-9]+)\s+([0-9]+)/.exec(line);
+                if (re[0]) {
+                    const node = re.slice(1).map(_ => Number.parseFloat(_));
+                    nodes.push(node);
+                }
+            } else if (line.startsWith('NAME :')) ret.name = line.split(' : ', 2)[1];
+            else if (line.startsWith('COMMENT :')) ret.comment = line.split(' : ', 2)[1];
+            else if (line.startsWith('TYPE :')) ret.type = line.split(' : ', 2)[1];
+            else if (line.startsWith('DIMENSION :')) ret.dimension = $U.N(line.split(' : ', 2)[1], 0);
+            else if (line.startsWith('EDGE_WEIGHT_TYPE :')) ret.edge_weight_type = line.split(' : ', 2)[1];
+        }
+        return ret;
+    } catch (e) {
+        _err(`! fail to open-file: ${name} =`, e);
+        throw e;
+    }
 };
