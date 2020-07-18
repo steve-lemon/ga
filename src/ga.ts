@@ -329,6 +329,27 @@ export class TravelingSalesMan {
     };
 
     /**
+     * crossover for round ring array.
+     * - use 2 point [A, B] to cut & swap
+     */
+    public crossover2 = ($sol: Solution, rnd?: (i: number) => number): Solution => {
+        const { sol: org } = $sol;
+        const LEN = org.length;
+        const a = rnd ? rnd(0) : random.randint(1, LEN - 1);
+        const b = rnd ? rnd(1) : random.randint(1, LEN - 1);
+        const [A, B] = [a, b].sort();
+        //NOTE - reverse the cut routes.
+        const sol =
+            A >= B
+                ? org.slice(0, A).concat(org.slice(A).reverse())
+                : org
+                      .slice(0, A)
+                      .concat(org.slice(A, B).reverse())
+                      .concat(org.slice(B));
+        return { fit: 0, sol };
+    };
+
+    /**
      * mutate solution.
      * - switch the pair within epsilon rate...
      */
@@ -390,6 +411,7 @@ export class TravelingSalesMan {
         //! load the last best solution
         let best: Solution = this.$best.load();
         const best_fit = best.fit;
+        const crossover = (sol: Solution) => this.crossover2(sol);
 
         //! initialise random population
         let population: Solution[] = range(popCount - 1)
@@ -404,7 +426,7 @@ export class TravelingSalesMan {
         for (let g = 0; g < genCount; g++) {
             //! init offspring with best's mutants
             const offsprings: Solution[] = range(10).map(() => {
-                const b = this.crossover(best);
+                const b = crossover(best);
                 const c = this.mutate(b, EPSILON * 2);
                 c.sol = this.reorder(c.sol);
                 c.fit = this.fitness(c);
@@ -416,7 +438,7 @@ export class TravelingSalesMan {
                 const parent = this.selection(population, K);
 
                 //! making offspring....
-                let offspring = this.crossover(parent);
+                let offspring = crossover(parent);
                 offspring = this.mutate(offspring, EPSILON);
                 offspring.sol = this.reorder(offspring.sol);
                 offspring.fit = this.fitness(offspring);
