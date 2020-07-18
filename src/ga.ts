@@ -333,20 +333,24 @@ export class TravelingSalesMan {
      * - switch the pair within epsilon rate...
      */
     public mutate = ($sol: Solution, epsilon: number, rnd?: (i: number) => number): Solution => {
-        const { sol } = $sol;
-        const len = Math.floor(sol.length / 2);
         rnd = rnd || (() => random.random());
-        range(len)
-            .map(i => rnd(i))
-            .forEach((r, i) => {
+        const { sol } = $sol;
+        const LEN = sol.length;
+        const len = Math.floor(LEN / 2);
+        const off = rnd(0) < 0.5 ? 1 : 0; // offset..
+        range(len).forEach(i => {
+            const r = rnd(i);
+            if (r < epsilon) {
                 //! switch pair.
-                if (r < epsilon) {
-                    const j = i * 2;
-                    const [a, b] = sol.slice(j, j + 2);
+                const j = i * 2 + off;
+                const L = sol.slice(j, j + 2);
+                if (L.length == 2) {
+                    const [a, b] = L;
                     sol[j] = b;
                     sol[j + 1] = a;
                 }
-            });
+            }
+        });
         return { ...$sol, sol };
     };
 
