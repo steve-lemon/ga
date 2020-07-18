@@ -385,6 +385,7 @@ export class TravelingSalesMan {
 
         //! load the last best solution
         let best: Solution = this.$best.load();
+        const best_fit = best.fit;
 
         //! initialise random population
         let population: Solution[] = range(popCount - 1)
@@ -408,6 +409,7 @@ export class TravelingSalesMan {
                 offspring.fit = this.fitness(offspring);
                 offsprings.push(offspring);
             }
+
             //! append offstring to pops
             population = population.concat(offsprings);
             population = population.sort((a, b) => a.fit - b.fit); //! order by asc
@@ -415,12 +417,15 @@ export class TravelingSalesMan {
             //! cut-off...
             population = population.slice(0, popCount);
             if (population[0].fit < best.fit || !best.fit) {
-                best = population[0];
-                _log(`! best-route@${g} =`, best.fit);
+                const best2 = population[0];
+                const fn = (i: number) => Math.round(i * 100) / 100;
+                _log(`! best-route@${g} :=\t`, fn(best2.fit), `\t d:${fn(best2.fit - best.fit)}`);
+                best = best2;
             }
         }
-        //! now save to best.
-        this.$best.save(best);
+
+        //! now save to best only if better.
+        if (!best_fit || best_fit > best.fit) this.$best.save(best);
 
         //! returns..
         return best;
