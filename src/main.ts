@@ -15,7 +15,7 @@ const NS = $U.NS('main', 'yellow');
  */
 export const main = (argv: string[]) => {
     _log(NS, '!main()...');
-    _log(NS, '> argv =', argv);
+    _log(NS, '> argv =', argv.slice(2).join(' '));
 
     //! get param..
     const name = getRunParam('name', 'bier127') as string;
@@ -35,7 +35,7 @@ export const main = (argv: string[]) => {
     for (let i = 1; i <= epoch; i++) {
         route = $tsm.findRoute(pop, gen);
         //! print the result.
-        _inf(NS, `> route[${i}][${route.cost}] = \n`, route.route.slice(0, 32).join(', '));
+        _inf(NS, `> route[${i}][${Math.round(route.cost * 100) / 100}] =`, route.route.slice(0, 16).join(', '));
     }
     saveJsonSync('data/result.txt', route.route.join('\n'));
 };
