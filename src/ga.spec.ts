@@ -118,12 +118,15 @@ describe('gs', () => {
         expect2(() => $tsm.crossover({ sol: [2, 1, 4, 0, 3] }, () => 2)).toEqual({ fit: 0, sol: [2, 1, 3, 0, 4] });
 
         //! test mutate();
+        expect2(() => $tsm.mutate({ sol: [2, 1, 4, 0] }, 0.1, () => 1)).toEqual({ sol: [2, 1, 4, 0] }); // no change
+        expect2(() => $tsm.mutate({ sol: [2, 1, 4, 0] }, 0.1, () => 0)).toEqual({ sol: [2, 4, 1, 0] }); // always.
         expect2(() => $tsm.mutate({ sol: [2, 1, 4, 0, 3] }, 0.1, () => 1)).toEqual({ sol: [2, 1, 4, 0, 3] }); // no change
-        expect2(() => $tsm.mutate({ sol: [2, 1, 4, 0, 3] }, 0.1, () => 0)).toEqual({ sol: [1, 2, 0, 4, 3] }); // always.
+        expect2(() => $tsm.mutate({ sol: [2, 1, 4, 0, 3] }, 0.1, () => 0)).toEqual({ sol: [2, 4, 1, 3, 0] }); // always.
 
         //! test find() from grid
         const samples: number[][] = ['1,0,0', '2,1,1', '3,1,0', '4,0,1'].map(_ => _.split(',').map(_ => $U.N(_)));
         const $tsm2 = new TravelingSalesMan(samples);
+        $tsm2.$best.name = 'data/best-spec.json';
         expect2(() => $tsm2.travels([0, 2, 1, 3])).toEqual(1 * 4);
         expect2(() => $tsm2.travels([0, 2, 1, 3].reverse())).toEqual(1 * 4);
         expect2(() => $tsm2.find(10, 50)).toEqual({ fit: 4, sol: [0, 2, 1, 3] });
