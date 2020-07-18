@@ -402,7 +402,16 @@ export class TravelingSalesMan {
 
         //! loop until generations.
         for (let g = 0; g < genCount; g++) {
-            const offsprings: Solution[] = [];
+            //! init offspring with best's mutants
+            const offsprings: Solution[] = range(10).map(() => {
+                const b = this.crossover(best);
+                const c = this.mutate(b, EPSILON * 2);
+                c.sol = this.reorder(c.sol);
+                c.fit = this.fitness(c);
+                return c;
+            });
+
+            //! gen more...
             while (offsprings.length < popCount) {
                 const parent = this.selection(population, K);
 
