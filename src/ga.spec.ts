@@ -5,8 +5,8 @@
  * @author      Steve <steve@lemoncloud.io>
  * @date        2020-07-17 initial version.
  */
-import { expect2, $_ } from 'lemon-core';
-import { fitness, random_solution, crossover, find, loaodTsp, TravelingSalesMan } from './ga';
+import { expect2, $_, $U } from 'lemon-core';
+import { fitness, random_solution, crossover, find, loaodTsp, TravelingSalesMan, Solution } from './ga';
 
 describe('gs', () => {
     it('should pass all', () => {
@@ -66,10 +66,9 @@ describe('gs', () => {
         expect2(() => $tsm.cities[126]).toEqual({ i: 127, x: 3248, y: 14152 });
 
         //! test travels()
-        // eslint-disable-next-line prettier/prettier
-        expect2(() => $tsm.travels([0, 1])).toEqual($tsm.distance({ i: 1, x: 9860, y: 14152 }, { i: 2, x: 9396, y: 14616 }) * 2);
-        // eslint-disable-next-line prettier/prettier
-        expect2(() => $tsm.travels([1, 0])).toEqual($tsm.distance({ i: 1, x: 9860, y: 14152 }, { i: 2, x: 9396, y: 14616 }) * 2);
+        const DIST_0_TO_1 = $tsm.distance({ i: 1, x: 9860, y: 14152 }, { i: 2, x: 9396, y: 14616 });
+        expect2(() => $tsm.travels([0, 1])).toEqual(DIST_0_TO_1 * 2);
+        expect2(() => $tsm.travels([1, 0])).toEqual(DIST_0_TO_1 * 2);
         // const inOrder = Array.from(Array(127)).map((_, i) => i);
         // const inOrder = [...Array(127).keys()];
         const inOrder = $_.range(0, 127); //! use lodash.
@@ -77,5 +76,60 @@ describe('gs', () => {
         expect2(() => inOrder.slice(0, 3)).toEqual([0, 1, 2]);
         expect2(() => inOrder.slice(125)).toEqual([125, 126]);
         expect2(() => Math.round($tsm.travels(inOrder) * 100)).toEqual(393998.28 * 100);
+
+        //! test metrics
+        expect2(() => $tsm.metrics[0][0]).toEqual(0);
+        expect2(() => $tsm.metrics[1][0]).toEqual(DIST_0_TO_1);
+        expect2(() => $tsm.metrics[0][1]).toEqual($tsm.distance($tsm.cities[0], $tsm.cities[1]));
+        expect2(() => $tsm.metrics[1][0]).toEqual($tsm.distance($tsm.cities[1], $tsm.cities[0]));
+        expect2(() => $tsm.distByIndex(0, 1)).toEqual($tsm.distance($tsm.cities[1], $tsm.cities[0]));
+
+        //! test reorder()
+        expect2(() => $tsm.reorder([2, 3, 0, 1], 4)).toEqual('@pole[4] is not found!');
+        expect2(() => $tsm.reorder([2, 3, 0, 1], 0)).toEqual([0, 1, 2, 3]);
+        expect2(() => $tsm.reorder([2, 1, 0, 3], 0)).toEqual([0, 1, 2, 3]); // same route of [0, 1, 3, 5], but ordering.
+        expect2(() => $tsm.reorder([2, 3, 0, 1], 3)).toEqual([3, 0, 1, 2]);
+        expect2(() => $tsm.reorder([2, 3, 0, 1], 1)).toEqual([1, 0, 3, 2]);
+        expect2(() => $tsm.reorder([2, 3, 0, 1], 0, true)).toEqual([3, 2, 1, 0]);
+
+        //! test fitness()
+        expect2(() => $tsm.fitness({ sol: [0, 1] })).toEqual(DIST_0_TO_1 * 2);
+
+        //! test randomSol();
+        expect2(() => $tsm.randomSol(2, i => i)).toEqual({ fit: 0, sol: [0, 1] });
+        expect2(() => $tsm.randomSol(3, i => i)).toEqual({ fit: 0, sol: [0, 1, 2] });
+        expect2(() => $tsm.randomSol(4, i => -i)).toEqual({ fit: 0, sol: [3, 2, 1, 0] });
+
+        //! test selection();
+        const pops: Solution[] = [
+            { fit: 2, sol: [] },
+            { fit: 1, sol: [] },
+            { fit: 4, sol: [] },
+            { fit: 0, sol: [] },
+            { fit: 3, sol: [] },
+        ];
+        expect2(() => $tsm.selection(pops, 2, i => i)).toEqual({ ...pops[3] });
+        expect2(() => $tsm.selection(pops, 2, i => -i)).toEqual({ ...pops[1] });
+        expect2(() => $tsm.selection(pops, 3, i => i)).toEqual({ ...pops[3] });
+        expect2(() => $tsm.selection(pops, 3, i => -i)).toEqual({ ...pops[1] });
+
+        //! test crossover();;
+        expect2(() => $tsm.crossover({ sol: [2, 1, 4, 0, 3] }, () => 3)).toEqual({ fit: 0, sol: [2, 1, 4, 3, 0] });
+        expect2(() => $tsm.crossover({ sol: [2, 1, 4, 0, 3] }, () => 2)).toEqual({ fit: 0, sol: [2, 1, 3, 0, 4] });
+
+        //! test mutate();
+        expect2(() => $tsm.mutate({ sol: [2, 1, 4, 0, 3] }, 0.1, () => 1)).toEqual({ sol: [2, 1, 4, 0, 3] }); // no change
+        expect2(() => $tsm.mutate({ sol: [2, 1, 4, 0, 3] }, 0.1, () => 0)).toEqual({ sol: [1, 2, 0, 4, 3] }); // always.
+
+        //! test find() from grid
+        const samples: number[][] = ['1,0,0', '2,1,1', '3,1,0', '4,0,1'].map(_ => _.split(',').map(_ => $U.N(_)));
+        const $tsm2 = new TravelingSalesMan(samples);
+        expect2(() => $tsm2.travels([0, 2, 1, 3])).toEqual(1 * 4);
+        expect2(() => $tsm2.travels([0, 2, 1, 3].reverse())).toEqual(1 * 4);
+        expect2(() => $tsm2.find(10, 50)).toEqual({ fit: 4, sol: [0, 2, 1, 3] });
+        expect2(() => $tsm2.find(10, 50)).toEqual({ fit: 4, sol: [0, 2, 1, 3] });
+        expect2(() => $tsm2.find(10, 50)).toEqual({ fit: 4, sol: [0, 2, 1, 3] });
+
+        expect2(() => $tsm2.findRoute(10, 50)).toEqual({ cost: 4, route: [1, 3, 2, 4] });
     });
 });

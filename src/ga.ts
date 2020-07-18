@@ -7,6 +7,7 @@
  */
 import { _log, _inf, _err, $U, $_ } from 'lemon-core';
 import fs from 'fs';
+
 // const _log = console.log;
 // const _inf = console.info;
 // const _err = console.error;
@@ -35,6 +36,8 @@ const random = {
     },
     random: () => Math.random(),
 };
+
+export const range = (a: number, b?: number): number[] => $_.range(a, b);
 
 export const fitness = (sol: Solution, sec?: number[]) => {
     sec = sec || SECRET;
@@ -119,8 +122,21 @@ export const loadJsonSync = (name: string, def: any = {}) => {
         const rawdata = fs.readFileSync(name);
         return JSON.parse(rawdata.toString());
     } catch (e) {
+        _err(`! err-read(${name}) =`, e);
         if (def) def.error = `${e.message || e}`;
         return def;
+    }
+};
+
+//! save json in sync.
+export const saveJsonSync = (name: string, data: any = {}) => {
+    name = !name.startsWith('./') ? `./${name}` : name;
+    try {
+        const json = typeof data == 'string' ? data : JSON.stringify(data, null, 4);
+        return fs.writeFileSync(name, json, 'utf8');
+    } catch (e) {
+        _err(`! err-save(${name}) =`, e);
+        return null;
     }
 };
 
@@ -166,17 +182,34 @@ export interface City {
 }
 
 /**
+ * get euklidian distance between a & b
+ * @param a     from a
+ * @param b     to b
+ */
+export const distance = (a: City, b: City) => Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+
+/**
  * class: `TravelingSalesMan`
  * - to solve traveling-salesman-problem.
  */
 export class TravelingSalesMan {
+    /**
+     * list of cities
+     */
     public readonly cities: City[];
+    /**
+     * distance metrics cities[i] <-> cities[j]
+     */
+    public readonly metrics: number[][];
+
     /**
      * default constructor
      * @param nodes    list of position info of node
      */
     public constructor(nodes: number[][]) {
         this.cities = TravelingSalesMan.transform(nodes);
+        this.metrics = TravelingSalesMan.buildMetrics(this.cities);
+        _inf(`TravelingSalesMan([${nodes.length}][${nodes[0].length}])`);
     }
 
     /**
@@ -199,9 +232,22 @@ export class TravelingSalesMan {
         });
 
     /**
+     *
+     * @param cities
+     */
+    public static buildMetrics = (cities: City[]): number[][] =>
+        range(cities.length).map(i => range(cities.length).map(j => distance(cities[i], cities[j])));
+
+    /**
      * get euklidian distance between a & b
      */
-    public distance = (a: City, b: City) => Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+    public distance = (a: City, b: City): number => distance(a, b);
+
+    /**
+     * using lookup metrics to get distance.
+     */
+    public distByIndex = (i: number, j: number) =>
+        i < this.cities.length && j < this.cities.length ? this.metrics[i][j] : 0;
 
     /**
      * travels each index, then get the total route distance.
@@ -213,9 +259,181 @@ export class TravelingSalesMan {
             .map((a, i) => {
                 //! get previous city (or, the last one).
                 const b = !i ? indices[indices.length - 1] : indices[i - 1]; //! point to the very first node if is last.
-                const A = this.cities[a];
-                const B = this.cities[b];
-                return A && B ? this.distance(A, B) : 0;
+                // const A = this.cities[a];
+                // const B = this.cities[b];
+                // return A && B ? this.distance(A, B) : 0;
+                return this.distByIndex(a, b);
             })
             .reduce((T, d) => T + d, 0);
+
+    /**
+     * re-ordering by pole
+     */
+    public reorder = (indices: number[], pole: number = 0, reverse?: boolean) => {
+        const i = indices.indexOf(pole);
+        if (i < 0) throw new Error(`@pole[${pole}] is not found!`);
+        //! determine direction.
+        const at = (i: number) =>
+            i >= indices.length ? indices[i - indices.length] : i < 0 ? indices[i + indices.length] : indices[i];
+        const [left, right] = [at(i - 1), at(i + 1)]; //! left & right.
+        let A = indices.slice(i).concat(indices.slice(0, i));
+        if (right > left) A = [A[0]].concat(A.slice(1).reverse());
+        return reverse ? A.reverse() : A;
+    };
+
+    /**
+     * fitness of solution.sol
+     * @param sol
+     */
+    public fitness = (sol: Solution) => this.travels(sol.sol);
+
+    /**
+     * get randomize solution (indices) by len
+     * @param rnd  (optional) custom random function.
+     */
+    public randomSol = (len: number, rnd?: (i: number) => number): Solution => ({
+        fit: 0,
+        sol: range(len)
+            .map(i => ({ i, r: rnd ? rnd(i) : random.random() }))
+            .sort((a, b) => a.r - b.r) // order by asc
+            .map(_ => _.i),
+    });
+
+    /**
+     * tournament select solution from populations in k-group
+     * @param pops list of population
+     * @param k    k-group
+     * @param rnd  (optional) custom random function.
+     */
+    public selection = (pops: Solution[], k: number, rnd?: (i: number) => number): Solution =>
+        pops
+            .map((p, i) => ({ p, i: rnd ? rnd(i) : random.random() }))
+            .sort((a, b) => b.i - a.i) // order by desc
+            .map(_ => _.p)
+            .slice(0, k)
+            .sort((a, b) => a.fit - b.fit) // order by asc
+            .slice(0, 1)[0];
+
+    /**
+     * crossover for round ring array.
+     */
+    public crossover = ($sol: Solution, rnd?: (i: number) => number): Solution => {
+        const { sol: org } = $sol;
+        const len = org.length;
+        const cut = rnd ? rnd(len) : random.randint(1, len - 1);
+        //WARN! same fit due to ring..
+        // const sol = org.slice(0, cut).concat(org.slice(cut));
+        //NOTE - reverse the 2nd route.
+        const sol = org.slice(0, cut).concat(org.slice(cut).reverse());
+        return { fit: 0, sol };
+    };
+
+    /**
+     * mutate solution.
+     * - switch the pair within epsilon rate...
+     */
+    public mutate = ($sol: Solution, epsilon: number, rnd?: (i: number) => number): Solution => {
+        const { sol } = $sol;
+        const len = Math.floor(sol.length / 2);
+        rnd = rnd || (() => random.random());
+        range(len)
+            .map(i => rnd(i))
+            .forEach((r, i) => {
+                //! switch pair.
+                if (r < epsilon) {
+                    const j = i * 2;
+                    const [a, b] = sol.slice(j, j + 2);
+                    sol[j] = b;
+                    sol[j + 1] = a;
+                }
+            });
+        return { ...$sol, sol };
+    };
+
+    /**
+     * save best to file.
+     */
+    public $best = {
+        name: `data/best.json`,
+        load: (): Solution => {
+            const LEN = this.cities.length;
+            const json = loadJsonSync(this.$best.name);
+            const $def = (): Solution => {
+                const $sol = this.randomSol(LEN);
+                const fit = this.fitness($sol);
+                const sol = this.reorder($sol.sol);
+                return { fit, sol };
+            };
+            if (json.error) return $def();
+            const sol = json as Solution;
+            if (sol && sol.sol && sol.fit && sol.sol.length == LEN) return sol;
+            return $def();
+        },
+        save: (best: Solution) => saveJsonSync(this.$best.name, best),
+    };
+
+    /**
+     * find best route..
+     *
+     * @param popCount count of population
+     * @param genCount count of generation
+     */
+    public find = (popCount: number, genCount: number): Solution => {
+        const LEN = this.cities.length;
+        const K = 8;
+        const EPSILON = 2.0 / LEN;
+
+        //! load the last best solution
+        let best: Solution = this.$best.load();
+
+        //! initialise random population
+        let population: Solution[] = range(popCount - 1)
+            .map((): Solution => this.randomSol(LEN))
+            .map($s => ({
+                fit: this.fitness($s),
+                sol: this.reorder($s.sol),
+            }));
+        population.push(best);
+
+        //! loop until generations.
+        for (let g = 0; g < genCount; g++) {
+            const offsprings: Solution[] = [];
+            while (offsprings.length < popCount) {
+                const parent = this.selection(population, K);
+
+                //! making offspring....
+                let offspring = this.crossover(parent);
+                offspring = this.mutate(offspring, EPSILON);
+                offspring.sol = this.reorder(offspring.sol);
+                offspring.fit = this.fitness(offspring);
+                offsprings.push(offspring);
+            }
+            //! append offstring to pops
+            population = population.concat(offsprings);
+            population = population.sort((a, b) => a.fit - b.fit); //! order by asc
+
+            //! cut-off...
+            population = population.slice(0, popCount);
+            if (population[0].fit < best.fit || !best.fit) {
+                best = population[0];
+                _log(`! best-route@${g} =`, best.fit);
+            }
+        }
+        //! now save to best.
+        this.$best.save(best);
+
+        //! returns..
+        return best;
+    };
+
+    /**
+     * find route by list of city
+     */
+    public findRoute = (popCount: number, genCount: number): { cost: number; route: number[] } => {
+        const best = this.find(popCount, genCount);
+        const { fit, sol } = best;
+        const cities = sol.map(i => this.cities[i]).map((c, i) => c.i || i);
+        // _inf(`! routes =`, cities.join(', '));
+        return { cost: fit, route: cities };
+    };
 }
