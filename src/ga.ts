@@ -425,9 +425,9 @@ export class TravelingSalesMan {
         //! loop until generations.
         for (let g = 0; g < genCount; g++) {
             //! init offspring with best's mutants
-            const offsprings: Solution[] = range(10).map(() => {
+            const offsprings: Solution[] = range(popCount / 2).map(i => {
                 const b = crossover(best);
-                const c = this.mutate(b, EPSILON * 2);
+                const c = i % 2 == 0 ? this.mutate(b, EPSILON * 2) : b;
                 c.sol = this.reorder(c.sol);
                 c.fit = this.fitness(c);
                 return c;
