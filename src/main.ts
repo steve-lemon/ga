@@ -37,7 +37,7 @@ export const main = (argv: string[]) => {
         $tsm.$best.name = `data/best-${fn(n)}.json`;
         for (let i = 1; i <= epoch; i++) {
             const best = $tsm.find(pop, gen);
-            _inf(NS, `> route[${i}][${Math.round(best.fit * 100) / 100}] =`, best.sol.slice(0, 16).join(', '));
+            _inf(NS, `> route[${n}/${i}][${Math.round(best.fit * 100) / 100}] =`, best.sol.slice(0, 16).join(', '));
 
             //! update the last best...
             const $org: any = loadJsonSync('data/best.json');
