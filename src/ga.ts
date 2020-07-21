@@ -7,7 +7,7 @@
  */
 import { _log, _inf, _err, $U, $_ } from 'lemon-core';
 import fs from 'fs';
-const NS = $U.NS('ga', 'yellow');
+const NS = $U.NS('ga', 'blue');
 
 // const _log = console.log;
 // const _inf = console.info;
@@ -418,6 +418,7 @@ export class TravelingSalesMan {
                 const $sol = this.randomSol(LEN);
                 const fit = this.fitness($sol);
                 const sol = this.reorder($sol.sol);
+                _inf(NS, `! make random best(${fit})...`);
                 return { fit, sol };
             };
             if (json.error) {
@@ -459,11 +460,10 @@ export class TravelingSalesMan {
         const migrate = (sol: Solution) => this.move2(sol);
         const mutate = (sol: Solution, r: number = 1) => this.mutate(sol, EPSILON * r);
 
-        //! initialise random population
-        let population: Solution[] = range(popCount - 1)
-            .map((): Solution => this.randomSol(LEN))
+        //! initialise random population w/ best
+        let population: Solution[] = range(popCount - 0)
+            .map(i => (i < 4 ? best : this.randomSol(LEN)))
             .map($s => fitness($s));
-        population.push(best);
 
         //! loop until generations.
         for (let g = 0; g < genCount; g++) {
