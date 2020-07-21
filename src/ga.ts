@@ -7,6 +7,7 @@
  */
 import { _log, _inf, _err, $U, $_ } from 'lemon-core';
 import fs from 'fs';
+const NS = $U.NS('ga', 'yellow');
 
 // const _log = console.log;
 // const _inf = console.info;
@@ -107,7 +108,7 @@ export const find = (pop: number, gen: number): Solution => {
         population = population.slice(0, pop);
         if (population[0].fit > best.fit) best = population[0];
 
-        _log(`! best@${g} =`, best);
+        _log(NS, `! best@${g} =`, best);
         if (best.fit >= SECRET_LET) break;
     }
 
@@ -122,7 +123,7 @@ export const loadJsonSync = (name: string, def: any = {}) => {
         const rawdata = fs.readFileSync(name);
         return JSON.parse(rawdata.toString());
     } catch (e) {
-        _err(`! err-read(${name}) =`, e);
+        _err(NS, `! err-read(${name}) =`, e);
         if (def) def.error = `${e.message || e}`;
         return def;
     }
@@ -135,7 +136,7 @@ export const saveJsonSync = (name: string, data: any = {}) => {
         const json = typeof data == 'string' ? data : JSON.stringify(data, null, 4);
         return fs.writeFileSync(name, json, 'utf8');
     } catch (e) {
-        _err(`! err-save(${name}) =`, e);
+        _err(NS, `! err-save(${name}) =`, e);
         return null;
     }
 };
@@ -167,7 +168,7 @@ export const loaodTsp = (name: string): TspInfo => {
         }
         return ret;
     } catch (e) {
-        _err(`! fail to open-file: ${name} =`, e);
+        _err(NS, `! fail to open-file: ${name} =`, e);
         throw e;
     }
 };
@@ -401,7 +402,7 @@ export class TravelingSalesMan {
      */
     public cleanup = (pops: Solution[]): Solution[] => {
         const maps = pops.map(_ => _.sol.join(':'));
-        return pops.map((_, i) => (maps.indexOf(maps[i]) != i ? null : _)).filter(_ => !!_);
+        return pops.map((_, i) => (maps.indexOf(maps[i]) < i ? null : _)).filter(_ => !!_);
     };
 
     /**
@@ -409,21 +410,33 @@ export class TravelingSalesMan {
      */
     public $best = {
         name: `data/best.json`,
+        last: null as Solution,
         load: (): Solution => {
             const LEN = this.cities.length;
-            const json = loadJsonSync(this.$best.name);
+            const json = this.$best.last ? this.$best.last : loadJsonSync(this.$best.name);
             const $def = (): Solution => {
                 const $sol = this.randomSol(LEN);
                 const fit = this.fitness($sol);
                 const sol = this.reorder($sol.sol);
                 return { fit, sol };
             };
-            if (json.error) return $def();
+            if (json.error) {
+                _err(NS, `! err in json =`, json.error);
+                return $def();
+            }
             const sol = json as Solution;
-            if (sol && sol.sol && sol.fit && sol.sol.length == LEN) return sol;
+            if (sol && sol.sol && sol.fit && sol.sol.length == LEN) {
+                return { fit: sol.fit, sol: [...sol.sol] };
+            }
             return $def();
         },
-        save: (best: Solution) => saveJsonSync(this.$best.name, best),
+        save: (best: Solution) => {
+            if (!best.fit || best.fit <= 0) return best;
+            const LAST_FIT = this.$best.last ? this.$best.last.fit : 0;
+            this.$best.last = { fit: best.fit, sol: [...best.sol] };
+            if (LAST_FIT != best.fit) saveJsonSync(this.$best.name, best);
+            return best;
+        },
     };
 
     /**
@@ -439,7 +452,6 @@ export class TravelingSalesMan {
 
         //! load the last best solution
         let best: Solution = this.$best.load();
-        const best_fit = best.fit;
 
         //! initialise random population
         let population: Solution[] = range(popCount - 1)
@@ -460,7 +472,7 @@ export class TravelingSalesMan {
             //! init offspring with best's mutants
             const offsprings: Solution[] = range($U.N(popCount / 4, 4)).map(i => {
                 const b = crossover(best);
-                const c = i % 2 == 0 ? this.mutate(b, EPSILON * 2) : b;
+                const c = mutate(b, i % 2);
                 c.sol = this.reorder(c.sol);
                 c.fit = this.fitness(c);
                 return c;
@@ -497,16 +509,15 @@ export class TravelingSalesMan {
             if (population[0].fit < best.fit || !best.fit) {
                 const best2 = population[0];
                 const fn = (i: number) => Math.round(i * 100) / 100;
-                _log(`! best-route@${g} :=\t`, fn(best2.fit), `\t d:${fn(best2.fit - best.fit)} \t<- old[${best.fit}]`);
+                _log(`! best-route@${g} :=\t`, fn(best2.fit), `\t d:${fn(best2.fit - best.fit)} \t<- ${fn(best.fit)}`);
                 best = { ...best2 };
+                //! check if best has zero fit.
+                if (!best.fit) throw new Error(`.fit is invalid! - sol:${best.sol}`);
             }
         }
 
         //! now save to best only if better.
-        if (!best_fit || best_fit > best.fit) this.$best.save(best);
-
-        //! returns..
-        return best;
+        return this.$best.save(best);
     };
 
     /**

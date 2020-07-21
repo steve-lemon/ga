@@ -125,6 +125,7 @@ describe('gs', () => {
         expect2(() => $tsm.crossover2($sol2, i => (!i ? 1 : 4))).toEqual({ fit: 0, sol: [2, 0, 4, 1, 3] });
         expect2(() => $tsm.crossover2($sol2, i => (!i ? 4 : 1))).toEqual({ fit: 0, sol: [2, 0, 4, 1, 3] });
         expect2(() => $tsm.crossover2($sol2, i => (!i ? 1 : 5))).toEqual({ fit: 0, sol: [2, 3, 0, 4, 1] });
+        expect2(() => $sol2).toEqual({ sol: [2, 1, 4, 0, 3] });
 
         //! test move2();
         const $sol3: Solution = { sol: [2, 1, 4, 0, 3] };
@@ -134,6 +135,7 @@ describe('gs', () => {
         expect2(() => $tsm.move2($sol3, i => [2, 1, 2][i])).toEqual({ fit: 0, sol: [2, 4, 1, 0, 3] });
         expect2(() => $tsm.move2($sol3, i => [1, 3, 2][i])).toEqual({ fit: 0, sol: [2, 0, 1, 4, 3] });
         expect2(() => $tsm.move2($sol3, i => [1, 3, 3][i])).toEqual({ fit: 0, sol: [2, 0, 3, 1, 4] });
+        expect2(() => $sol3).toEqual({ sol: [2, 1, 4, 0, 3] });
 
         //! test mutate();
         expect2(() => $tsm.mutate({ sol: [2, 1, 4, 0] }, 0.1, () => 1)).toEqual({ fit: 0, sol: [2, 1, 4, 0] }); // no change
