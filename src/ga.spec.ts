@@ -141,6 +141,12 @@ describe('gs', () => {
         expect2(() => $tsm.mutate({ sol: [2, 1, 4, 0, 3] }, 0.1, () => 1)).toEqual({ fit: 0, sol: [2, 1, 4, 0, 3] }); // no change
         expect2(() => $tsm.mutate({ sol: [2, 1, 4, 0, 3] }, 0.1, () => 0)).toEqual({ fit: 0, sol: [2, 4, 1, 3, 0] }); // always.
 
+        //! test cleanup();
+        /* eslint-disable prettier/prettier */
+        const pops2: Solution[] = [[1,2],[3,4],[1,3],[3,4],[2,5],[1,3]].map(sol => ({fit:0, sol}));
+        expect2(() => $tsm.cleanup(pops2).map(_ => _.sol)).toEqual([[1,2], [3,4], [1,3], [2,5]]);
+        /* eslint-enable prettier/prettier */
+
         //! test find() from grid
         const samples: number[][] = ['1,0,0', '2,1,1', '3,1,0', '4,0,1'].map(_ => _.split(',').map(_ => $U.N(_)));
         const $tsm2 = new TravelingSalesMan(samples);

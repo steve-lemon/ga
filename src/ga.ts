@@ -396,6 +396,15 @@ export class TravelingSalesMan {
     };
 
     /**
+     * cleanup the duplicated one.
+     * @param pops list of population.
+     */
+    public cleanup = (pops: Solution[]): Solution[] => {
+        const maps = pops.map(_ => _.sol.join(':'));
+        return pops.map((_, i) => (maps.indexOf(maps[i]) != i ? null : _)).filter(_ => !!_);
+    };
+
+    /**
      * save best to file.
      */
     public $best = {
@@ -476,6 +485,9 @@ export class TravelingSalesMan {
             //! append offstring to pops
             population = population.concat(offsprings);
             population = population.sort((a, b) => a.fit - b.fit); //! order by asc
+
+            //! remove duplicated popos..
+            if (!(g % 10)) population = this.cleanup(population);
 
             //! cut-off...
             population = population.slice(0, popCount);
