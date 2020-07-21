@@ -5,7 +5,7 @@
  * @author      Steve <steve@lemoncloud.io>
  * @date        2020-07-17 initial version.
  */
-import { _log, $U, getRunParam, _inf } from 'lemon-core';
+import { _log, $U, getRunParam, _inf, loadJsonSync } from 'lemon-core';
 import { loaodTsp, TravelingSalesMan, saveJsonSync } from './ga';
 const NS = $U.NS('main', 'yellow');
 
@@ -22,7 +22,8 @@ export const main = (argv: string[]) => {
     const pop = getRunParam('pop', 20) as number;
     const gen = getRunParam('gen', 50) as number;
     const epoch = getRunParam('epo', 50) as number;
-    _inf(NS, `! conf =`, { name, pop, gen });
+    const max = getRunParam('max', 1) as number;
+    _inf(NS, `! conf =`, { name, pop, gen, epoch, max });
 
     //! load tsp
     const $tsp = loaodTsp(name);
@@ -30,12 +31,20 @@ export const main = (argv: string[]) => {
     _log(NS, `> tsp.length =`, $tsp.nodes.length);
 
     //! create TravelingSalesMan
-    const $tsm = new TravelingSalesMan($tsp.nodes);
-    let route = null;
-    for (let i = 1; i <= epoch; i++) {
-        route = $tsm.findRoute(pop, gen);
-        //! print the result.
-        _inf(NS, `> route[${i}][${Math.round(route.cost * 100) / 100}] =`, route.route.slice(0, 16).join(', '));
+    const fn = (n: number) => (n < 10 ? '000' : n < 100 ? '00' : n < 1000 ? '0' : '') + `${n}`;
+    for (let n = 0; n < max; n++) {
+        const $tsm = new TravelingSalesMan($tsp.nodes);
+        $tsm.$best.name = `data/best-${fn(n)}.json`;
+        for (let i = 1; i <= epoch; i++) {
+            const best = $tsm.find(pop, gen);
+            _inf(NS, `> route[${i}][${Math.round(best.fit * 100) / 100}] =`, best.sol.slice(0, 16).join(', '));
+
+            //! update the last best...
+            const $org: any = loadJsonSync('data/best.json');
+            if ($org.error || ($org && $org.fit > best.fit && best.fit > 0)) {
+                _inf(NS, `! update last best: ${best.fit || 0} <- ${$org.fit || 0}`);
+                saveJsonSync('data/best.json', best);
+            }
+        }
     }
-    saveJsonSync('data/result.txt', route.route.join('\n'));
 };
