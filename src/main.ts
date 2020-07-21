@@ -35,7 +35,8 @@ export const main = (argv: string[]) => {
     for (let i = 1; i <= epoch; i++) {
         route = $tsm.findRoute(pop, gen);
         //! print the result.
-        _inf(NS, `> route[${i}][${Math.round(route.cost * 100) / 100}] =`, route.route.slice(0, 16).join(', '));
+        if (!(i % 5))
+            _inf(NS, `> route[${i}][${Math.round(route.cost * 100) / 100}] =`, route.route.slice(0, 16).join(', '));
     }
     saveJsonSync('data/result.txt', route.route.join('\n'));
 };

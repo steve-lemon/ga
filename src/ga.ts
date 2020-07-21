@@ -350,12 +350,32 @@ export class TravelingSalesMan {
     };
 
     /**
+     * cut and move to random poz
+     */
+    public move2 = ($sol: Solution, rnd?: (i: number) => number): Solution => {
+        const { sol: org } = $sol;
+        const LEN = org.length;
+        const a = rnd ? rnd(0) : random.randint(1, LEN - 1);
+        const b = rnd ? rnd(1) : random.randint(1, LEN - 1);
+        const [A, B] = [a, b].sort();
+        const c = rnd ? rnd(2) : random.randint(0, LEN - (B - A));
+        const tmp = org.slice(0, A).concat(org.slice(B));
+        const C = c < 0 ? 0 : c >= tmp.length ? tmp.length : c;
+        const sol = tmp
+            .slice(0, C)
+            .concat(org.slice(A, B))
+            .concat(tmp.slice(C));
+        return { fit: 0, sol };
+    };
+
+    /**
      * mutate solution.
      * - switch the pair within epsilon rate...
      */
     public mutate = ($sol: Solution, epsilon: number, rnd?: (i: number) => number): Solution => {
         rnd = rnd || (() => random.random());
-        const { sol } = $sol;
+        const { sol: org } = $sol;
+        const sol = [...org];
         const LEN = sol.length;
         const len = Math.floor(LEN / 2);
         const off = rnd(0) < 0.5 ? 1 : 0; // offset..
@@ -372,7 +392,7 @@ export class TravelingSalesMan {
                 }
             }
         });
-        return { ...$sol, sol };
+        return { fit: 0, sol };
     };
 
     /**
@@ -411,7 +431,6 @@ export class TravelingSalesMan {
         //! load the last best solution
         let best: Solution = this.$best.load();
         const best_fit = best.fit;
-        const crossover = (sol: Solution) => this.crossover2(sol);
 
         //! initialise random population
         let population: Solution[] = range(popCount - 1)
@@ -422,10 +441,15 @@ export class TravelingSalesMan {
             }));
         population.push(best);
 
+        //! operators
+        const crossover = (sol: Solution) => this.crossover2(sol);
+        const mutate = (sol: Solution, r: number = 1) => this.mutate(sol, EPSILON * r);
+        const move = (sol: Solution) => this.move2(sol);
+
         //! loop until generations.
         for (let g = 0; g < genCount; g++) {
             //! init offspring with best's mutants
-            const offsprings: Solution[] = range(popCount / 2).map(i => {
+            const offsprings: Solution[] = range($U.N(popCount / 4, 4)).map(i => {
                 const b = crossover(best);
                 const c = i % 2 == 0 ? this.mutate(b, EPSILON * 2) : b;
                 c.sol = this.reorder(c.sol);
@@ -438,8 +462,12 @@ export class TravelingSalesMan {
                 const parent = this.selection(population, K);
 
                 //! making offspring....
-                let offspring = crossover(parent);
-                offspring = this.mutate(offspring, EPSILON);
+                const offspring = ((x: number) => {
+                    if (x == 0) return crossover(parent);
+                    else if (x == 1) return mutate(parent);
+                    return move(parent);
+                })((popCount - offsprings.length) % 3);
+                //! reorder and calc fit.
                 offspring.sol = this.reorder(offspring.sol);
                 offspring.fit = this.fitness(offspring);
                 offsprings.push(offspring);
