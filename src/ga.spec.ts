@@ -114,17 +114,13 @@ describe('gs', () => {
         expect2(() => $tsm.selection(pops, 3, i => -i)).toEqual({ ...pops[1] });
 
         //! test crossover();;
-        expect2(() => $tsm.crossover({ sol: [2, 1, 4, 0, 3] }, () => 3)).toEqual({ fit: 0, sol: [2, 1, 4, 3, 0] });
-        expect2(() => $tsm.crossover({ sol: [2, 1, 4, 0, 3] }, () => 2)).toEqual({ fit: 0, sol: [2, 1, 3, 0, 4] });
-
-        //! test crossover2();;
         const $sol2: Solution = { sol: [2, 1, 4, 0, 3] };
-        expect2(() => $tsm.crossover2($sol2, i => (!i ? 2 : 2))).toEqual({ fit: 0, sol: [2, 1, 3, 0, 4] });
-        expect2(() => $tsm.crossover2($sol2, i => (!i ? 0 : 0))).toEqual({ fit: 0, sol: [3, 0, 4, 1, 2] });
-        expect2(() => $tsm.crossover2($sol2, i => (!i ? 1 : 1))).toEqual({ fit: 0, sol: [2, 3, 0, 4, 1] });
-        expect2(() => $tsm.crossover2($sol2, i => (!i ? 1 : 4))).toEqual({ fit: 0, sol: [2, 0, 4, 1, 3] });
-        expect2(() => $tsm.crossover2($sol2, i => (!i ? 4 : 1))).toEqual({ fit: 0, sol: [2, 0, 4, 1, 3] });
-        expect2(() => $tsm.crossover2($sol2, i => (!i ? 1 : 5))).toEqual({ fit: 0, sol: [2, 3, 0, 4, 1] });
+        expect2(() => $tsm.crossover($sol2, i => (!i ? 2 : 2))).toEqual({ fit: 0, sol: [2, 1, 3, 0, 4] });
+        expect2(() => $tsm.crossover($sol2, i => (!i ? 0 : 0))).toEqual({ fit: 0, sol: [3, 0, 4, 1, 2] });
+        expect2(() => $tsm.crossover($sol2, i => (!i ? 1 : 1))).toEqual({ fit: 0, sol: [2, 3, 0, 4, 1] });
+        expect2(() => $tsm.crossover($sol2, i => (!i ? 1 : 4))).toEqual({ fit: 0, sol: [2, 0, 4, 1, 3] });
+        expect2(() => $tsm.crossover($sol2, i => (!i ? 4 : 1))).toEqual({ fit: 0, sol: [2, 0, 4, 1, 3] });
+        expect2(() => $tsm.crossover($sol2, i => (!i ? 1 : 5))).toEqual({ fit: 0, sol: [2, 3, 0, 4, 1] });
         expect2(() => $sol2).toEqual({ sol: [2, 1, 4, 0, 3] });
 
         //! test move2();
@@ -134,7 +130,7 @@ describe('gs', () => {
         expect2(() => $tsm.move2($sol3, i => [2, 2, 2][i])).toEqual({ fit: 0, sol: [2, 1, 4, 0, 3] });
         expect2(() => $tsm.move2($sol3, i => [2, 1, 2][i])).toEqual({ fit: 0, sol: [2, 4, 1, 0, 3] });
         expect2(() => $tsm.move2($sol3, i => [1, 3, 2][i])).toEqual({ fit: 0, sol: [2, 0, 1, 4, 3] });
-        expect2(() => $tsm.move2($sol3, i => [1, 3, 3][i])).toEqual({ fit: 0, sol: [2, 0, 3, 1, 4] });
+        expect2(() => $tsm.move2($sol3, i => [1, 3, 3][i])).toEqual({ fit: 0, sol: [2, 0, 1, 4, 3] });
         expect2(() => $tsm.move2($sol3, i => [1, 3, 0][i])).toEqual({ fit: 0, sol: [1, 4, 2, 0, 3] });
         expect2(() => $sol3).toEqual({ sol: [2, 1, 4, 0, 3] });
 

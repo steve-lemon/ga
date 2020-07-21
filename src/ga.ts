@@ -317,23 +317,9 @@ export class TravelingSalesMan {
 
     /**
      * crossover for round ring array.
-     */
-    public crossover = ($sol: Solution, rnd?: (i: number) => number): Solution => {
-        const { sol: org } = $sol;
-        const len = org.length;
-        const cut = rnd ? rnd(len) : random.randint(1, len - 1);
-        //WARN! same fit due to ring..
-        // const sol = org.slice(0, cut).concat(org.slice(cut));
-        //NOTE - reverse the 2nd route.
-        const sol = org.slice(0, cut).concat(org.slice(cut).reverse());
-        return { fit: 0, sol };
-    };
-
-    /**
-     * crossover for round ring array.
      * - use 2 point [A, B] to cut & swap
      */
-    public crossover2 = ($sol: Solution, rnd?: (i: number) => number): Solution => {
+    public crossover = ($sol: Solution, rnd?: (i: number) => number): Solution => {
         const { sol: org } = $sol;
         const LEN = org.length;
         const a = rnd ? rnd(0) : random.randint(1, LEN - 1);
@@ -347,7 +333,7 @@ export class TravelingSalesMan {
                       .slice(0, A)
                       .concat(org.slice(A, B).reverse())
                       .concat(org.slice(B));
-        if (LEN != sol.length) throw new Error(`.len[${LEN}] is diff@crossover2: ${[A, B]}`);
+        if (LEN != sol.length) throw new Error(`.len[${LEN}] is diff@crossover: ${[A, B]}`);
         return { fit: 0, sol };
     };
 
@@ -462,7 +448,7 @@ export class TravelingSalesMan {
 
         //! operators
         const fitness = (sol: Solution) => ({ fit: this.fitness(sol), sol: this.reorder(sol.sol) });
-        const crossover = (sol: Solution) => this.crossover2(sol);
+        const crossover = (sol: Solution) => this.crossover(sol);
         const migrate = (sol: Solution) => this.move2(sol);
         const mutate = (sol: Solution, r: number = 1) => this.mutate(sol, EPSILON * r);
 
