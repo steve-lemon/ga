@@ -453,19 +453,17 @@ export class TravelingSalesMan {
         //! load the last best solution
         let best: Solution = this.$best.load();
 
-        //! initialise random population
-        let population: Solution[] = range(popCount - 1)
-            .map((): Solution => this.randomSol(LEN))
-            .map($s => ({
-                fit: this.fitness($s),
-                sol: this.reorder($s.sol),
-            }));
-        population.push(best);
-
         //! operators
+        const fitness = (sol: Solution) => ({ fit: this.fitness(sol), sol: this.reorder(sol.sol) });
         const crossover = (sol: Solution) => this.crossover2(sol);
         const migrate = (sol: Solution) => this.move2(sol);
         const mutate = (sol: Solution, r: number = 1) => this.mutate(sol, EPSILON * r);
+
+        //! initialise random population
+        let population: Solution[] = range(popCount - 1)
+            .map((): Solution => this.randomSol(LEN))
+            .map($s => fitness($s));
+        population.push(best);
 
         //! loop until generations.
         for (let g = 0; g < genCount; g++) {
@@ -473,9 +471,7 @@ export class TravelingSalesMan {
             const offsprings: Solution[] = range($U.N(popCount / 4, 4)).map(i => {
                 const b = crossover(best);
                 const c = mutate(b, i % 2);
-                c.sol = this.reorder(c.sol);
-                c.fit = this.fitness(c);
-                return c;
+                return fitness(c);
             });
 
             //! gen more...
@@ -483,16 +479,14 @@ export class TravelingSalesMan {
                 const parent = this.selection(population, K);
 
                 //! making offspring....
-                const offspring = ((x: number) => {
-                    if (x == 0) return crossover(parent);
-                    else if (x == 1) return mutate(parent);
-                    return migrate(parent);
-                })((popCount - offsprings.length) % 3);
+                const offspring = ((x: number, sol) => {
+                    if (x == 0) return crossover(sol);
+                    else if (x == 1) return mutate(sol);
+                    return migrate(sol);
+                })((popCount - offsprings.length) % 3, parent);
 
                 //! reorder and calc fit.
-                offspring.sol = this.reorder(offspring.sol);
-                offspring.fit = this.fitness(offspring);
-                offsprings.push(offspring);
+                offsprings.push(fitness(offspring));
             }
 
             //! append offstring to pops
