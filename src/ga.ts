@@ -493,7 +493,7 @@ export class TravelingSalesMan {
             population = population.sort((a, b) => a.fit - b.fit);
 
             //! cut-off...
-            population = population.slice(0, popCount);
+            population = population.slice(0, Math.min(popCount, population.length));
             if (population[0].fit < best.fit || !best.fit) {
                 const best2 = population[0];
                 const fn = (i: number) => Math.round(i * 100) / 100;
