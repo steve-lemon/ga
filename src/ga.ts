@@ -506,17 +506,19 @@ export class TravelingSalesMan {
                 offsprings.push(fitness(mutate({ fit: 0, sol: D })));
             }
 
-            //! append offstring to pops
+            //! append offstrings into pops.
             population = population.concat(offsprings);
 
-            //! remove duplicated popos..
+            //! remove the duplicated pops.
             if (!(g % 10)) population = this.cleanup(population);
 
-            //! order by fit asc
+            //! order by .fit asc
             population = population.sort((a, b) => a.fit - b.fit);
 
-            //! cut-off...
+            //! cut-off by pop-count.
             population = population.slice(0, Math.min(popCount, population.length));
+
+            //! estimate the best fit.
             if (population[0].fit < $last.best.fit) {
                 const $old = $last.best;
                 const $new = population[0];
