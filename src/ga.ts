@@ -435,7 +435,10 @@ export class TravelingSalesMan {
             if (!best.fit || best.fit <= 0) return best;
             const LAST_FIT = this.$best.last ? this.$best.last.fit : 0;
             this.$best.last = { fit: best.fit, sol: [...best.sol] };
-            if (LAST_FIT != best.fit) saveJsonSync(this.$best.name, best);
+            if (LAST_FIT != best.fit) {
+                _inf(NS, `! save last-best(${best.fit})...`);
+                saveJsonSync(this.$best.name, best);
+            }
             return best;
         },
     };
@@ -452,7 +455,7 @@ export class TravelingSalesMan {
         const EPSILON = 2.0 / LEN;
 
         //! load the last best solution
-        let best: Solution = this.$best.load();
+        const $last = { best: this.$best.load() };
 
         //! operators
         const fitness = (sol: Solution) => ({ fit: this.fitness(sol), sol: this.reorder(sol.sol) });
@@ -462,14 +465,14 @@ export class TravelingSalesMan {
 
         //! initialise random population w/ best
         let population: Solution[] = range(popCount - 0)
-            .map(i => (i < 4 ? best : this.randomSol(LEN)))
+            .map(i => (i < 4 ? $last.best : this.randomSol(LEN)))
             .map($s => fitness($s));
 
         //! loop until generations.
         for (let g = 0; g < genCount; g++) {
             //! init offspring with best's mutants
             const offsprings: Solution[] = range($U.N(popCount / 4, 4)).map(i => {
-                const b = crossover(best);
+                const b = crossover($last.best);
                 const c = mutate(b, i % 2);
                 return fitness(c);
             });
@@ -500,18 +503,19 @@ export class TravelingSalesMan {
 
             //! cut-off...
             population = population.slice(0, Math.min(popCount, population.length));
-            if (population[0].fit < best.fit || !best.fit) {
-                const best2 = population[0];
+            if (population[0].fit < $last.best.fit) {
+                const $old = $last.best;
+                const $new = population[0];
                 const fn = (i: number) => Math.round(i * 100) / 100;
-                _log(`! best-route@${g} :=\t`, fn(best2.fit), `\t d:${fn(best2.fit - best.fit)} \t<- ${fn(best.fit)}`);
-                best = { ...best2 };
+                _log(NS, `! best-route@${g} :=\t`, fn($new.fit), `\td:${fn($new.fit - $old.fit)} \t<-${fn($old.fit)}`);
+                $last.best = { fit: $new.fit, sol: [...$new.sol] };
                 //! check if best has zero fit.
-                if (!best.fit) throw new Error(`.fit is invalid! - sol:${best.sol}`);
+                if (!$last.best.fit) throw new Error(`.fit is invalid! - sol:${$last.best.sol}`);
             }
         }
 
         //! now save to best only if better.
-        return this.$best.save(best);
+        return this.$best.save($last.best);
     };
 
     /**
