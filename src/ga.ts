@@ -497,8 +497,8 @@ export class TravelingSalesMan {
             if (population[0].fit < best.fit || !best.fit) {
                 const best2 = population[0];
                 const fn = (i: number) => Math.round(i * 100) / 100;
-                _log(`! best-route@${g} :=\t`, fn(best2.fit), `\t d:${fn(best2.fit - best.fit)}`);
-                best = best2;
+                _log(`! best-route@${g} :=\t`, fn(best2.fit), `\t d:${fn(best2.fit - best.fit)} \t<- old[${best.fit}]`);
+                best = { ...best2 };
             }
         }
 
