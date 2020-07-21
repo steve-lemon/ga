@@ -135,6 +135,7 @@ describe('gs', () => {
         expect2(() => $tsm.move2($sol3, i => [2, 1, 2][i])).toEqual({ fit: 0, sol: [2, 4, 1, 0, 3] });
         expect2(() => $tsm.move2($sol3, i => [1, 3, 2][i])).toEqual({ fit: 0, sol: [2, 0, 1, 4, 3] });
         expect2(() => $tsm.move2($sol3, i => [1, 3, 3][i])).toEqual({ fit: 0, sol: [2, 0, 3, 1, 4] });
+        expect2(() => $tsm.move2($sol3, i => [1, 3, 0][i])).toEqual({ fit: 0, sol: [1, 4, 2, 0, 3] });
         expect2(() => $sol3).toEqual({ sol: [2, 1, 4, 0, 3] });
 
         //! test mutate();

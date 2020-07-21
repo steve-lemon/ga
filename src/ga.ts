@@ -347,6 +347,7 @@ export class TravelingSalesMan {
                       .slice(0, A)
                       .concat(org.slice(A, B).reverse())
                       .concat(org.slice(B));
+        if (LEN != sol.length) throw new Error(`.len[${LEN}] is diff@crossover2: ${[A, B]}`);
         return { fit: 0, sol };
     };
 
@@ -358,14 +359,15 @@ export class TravelingSalesMan {
         const LEN = org.length;
         const a = rnd ? rnd(0) : random.randint(1, LEN - 1);
         const b = rnd ? rnd(1) : random.randint(1, LEN - 1);
-        const [A, B] = [a, b].sort();
-        const c = rnd ? rnd(2) : random.randint(0, LEN - (B - A));
+        const [A, B] = a < b ? [a, b] : [b, a];
+        const c = rnd ? rnd(2) : random.randint(0, LEN - (B - A) - 1);
         const tmp = org.slice(0, A).concat(org.slice(B));
-        const C = c < 0 ? 0 : c >= tmp.length ? tmp.length : c;
+        const C = c < 0 ? 0 : c >= tmp.length ? tmp.length - 1 : c;
         const sol = tmp
             .slice(0, C)
             .concat(org.slice(A, B))
             .concat(tmp.slice(C));
+        if (LEN != sol.length) throw new Error(`.len[${LEN}] is diff@move2: ${[A, B, C]}`);
         return { fit: 0, sol };
     };
 
@@ -421,7 +423,7 @@ export class TravelingSalesMan {
                 _inf(NS, `! make random best(${fit})...`);
                 return { fit, sol };
             };
-            if (json.error) {
+            if (!json || json.error) {
                 _err(NS, `! err in json =`, json.error);
                 return $def();
             }
@@ -429,6 +431,7 @@ export class TravelingSalesMan {
             if (sol && sol.sol && sol.fit && sol.sol.length == LEN) {
                 return { fit: sol.fit, sol: [...sol.sol] };
             }
+            _inf(NS, `! WARN! invalid-best(fit:${sol.fit},len:${sol.sol.length} vs ${LEN})`);
             return $def();
         },
         save: (best: Solution) => {
