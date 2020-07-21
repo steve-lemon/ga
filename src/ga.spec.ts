@@ -143,7 +143,8 @@ describe('gs', () => {
 
         //! test cleanup();
         /* eslint-disable prettier/prettier */
-        const pops2: Solution[] = [[1,2],[3,4],[1,3],[3,4],[2,5],[1,3]].map(sol => ({fit:0, sol}));
+        const pops2: Solution[] = [[1,2],[3,4],[1,3],[3,4],[2,5],[1,3]].map((sol, i) => ({fit:i, sol}));
+        expect2(() => $tsm.cleanup(pops2).map(_ => _.fit)).toEqual([0, 1, 2, 4]);
         expect2(() => $tsm.cleanup(pops2).map(_ => _.sol)).toEqual([[1,2], [3,4], [1,3], [2,5]]);
         /* eslint-enable prettier/prettier */
 

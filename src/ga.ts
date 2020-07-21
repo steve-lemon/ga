@@ -452,8 +452,8 @@ export class TravelingSalesMan {
 
         //! operators
         const crossover = (sol: Solution) => this.crossover2(sol);
+        const migrate = (sol: Solution) => this.move2(sol);
         const mutate = (sol: Solution, r: number = 1) => this.mutate(sol, EPSILON * r);
-        const move = (sol: Solution) => this.move2(sol);
 
         //! loop until generations.
         for (let g = 0; g < genCount; g++) {
@@ -474,8 +474,9 @@ export class TravelingSalesMan {
                 const offspring = ((x: number) => {
                     if (x == 0) return crossover(parent);
                     else if (x == 1) return mutate(parent);
-                    return move(parent);
+                    return migrate(parent);
                 })((popCount - offsprings.length) % 3);
+
                 //! reorder and calc fit.
                 offspring.sol = this.reorder(offspring.sol);
                 offspring.fit = this.fitness(offspring);
@@ -484,10 +485,12 @@ export class TravelingSalesMan {
 
             //! append offstring to pops
             population = population.concat(offsprings);
-            population = population.sort((a, b) => a.fit - b.fit); //! order by asc
 
             //! remove duplicated popos..
             if (!(g % 10)) population = this.cleanup(population);
+
+            //! order by fit asc
+            population = population.sort((a, b) => a.fit - b.fit);
 
             //! cut-off...
             population = population.slice(0, popCount);
