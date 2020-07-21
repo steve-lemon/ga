@@ -338,6 +338,27 @@ export class TravelingSalesMan {
     };
 
     /**
+     * mate and crossover two parents
+     */
+    public crossover2 = (p1: Solution, p2: Solution, rnd?: (i: number) => number) => {
+        const { sol: org } = p1;
+        const LEN = org.length;
+        const x = rnd ? rnd(0) : random.randint(1, LEN - 1);
+        if (x < 1 || x > LEN - 1) throw new Error(`@x[${x}] is out of range[1,${LEN - 1}]`);
+        const [a, b] = [p1.sol.slice(0, x), p1.sol.slice(x)];
+        const [c, d] = [p2.sol.slice(0, x), p2.sol.slice(x)];
+        const A = a.concat(d.filter(i => !a.includes(i))).concat(c.filter(i => !a.includes(i)));
+        const B = b.concat(c.filter(i => !b.includes(i))).concat(d.filter(i => !b.includes(i)));
+        const C = c.concat(b.filter(i => !c.includes(i))).concat(a.filter(i => !c.includes(i)));
+        const D = d.concat(a.filter(i => !d.includes(i))).concat(b.filter(i => !d.includes(i)));
+        if (A.length != LEN) throw new Error(`.len[${LEN}] is diff@cross2 A:${[A.length]}`);
+        if (B.length != LEN) throw new Error(`.len[${LEN}] is diff@cross2 B:${[B.length]}`);
+        if (C.length != LEN) throw new Error(`.len[${LEN}] is diff@cross2 C:${[C.length]}`);
+        if (D.length != LEN) throw new Error(`.len[${LEN}] is diff@cross2 D:${[D.length]}`);
+        return { A, B, C, D };
+    };
+
+    /**
      * cut and move to random poz
      */
     public move2 = ($sol: Solution, rnd?: (i: number) => number): Solution => {
@@ -449,8 +470,9 @@ export class TravelingSalesMan {
         //! operators
         const fitness = (sol: Solution) => ({ fit: this.fitness(sol), sol: this.reorder(sol.sol) });
         const crossover = (sol: Solution) => this.crossover(sol);
-        const migrate = (sol: Solution) => this.move2(sol);
+        const crossover2 = (p1: Solution, p2: Solution) => this.crossover2(p1, p2);
         const mutate = (sol: Solution, r: number = 1) => this.mutate(sol, EPSILON * r);
+        const move = (sol: Solution) => this.move2(sol);
 
         //! initialise random population w/ best
         let population: Solution[] = range(popCount - 0)
@@ -460,25 +482,28 @@ export class TravelingSalesMan {
         //! loop until generations.
         for (let g = 0; g < genCount; g++) {
             //! init offspring with best's mutants
-            const offsprings: Solution[] = range($U.N(popCount / 4, 4)).map(i => {
+            const offsprings: Solution[] = range(4).map(i => {
                 const b = crossover($last.best);
-                const c = mutate(b, i % 2);
+                const c = mutate(move(b), i % 2);
                 return fitness(c);
             });
 
             //! gen more...
             while (offsprings.length < popCount) {
-                const parent = this.selection(population, K);
+                //! select pairs..
+                const par1 = this.selection(population, K);
+                const par2 = this.selection(population, K);
 
-                //! making offspring....
-                const offspring = ((x: number, sol) => {
-                    if (x == 0) return crossover(sol);
-                    else if (x == 1) return mutate(sol);
-                    return migrate(sol);
-                })((popCount - offsprings.length) % 3, parent);
+                //! make offsprings.
+                offsprings.push(fitness(mutate(crossover(par1))));
+                offsprings.push(fitness(mutate(move(par2))));
 
-                //! reorder and calc fit.
-                offsprings.push(fitness(offspring));
+                //! cross paires.
+                const { A, B, C, D } = crossover2(par1, par2);
+                offsprings.push(fitness(mutate({ fit: 0, sol: A })));
+                offsprings.push(fitness(mutate({ fit: 0, sol: B })));
+                offsprings.push(fitness(mutate({ fit: 0, sol: C })));
+                offsprings.push(fitness(mutate({ fit: 0, sol: D })));
             }
 
             //! append offstring to pops

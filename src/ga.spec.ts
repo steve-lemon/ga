@@ -123,6 +123,21 @@ describe('gs', () => {
         expect2(() => $tsm.crossover($sol2, i => (!i ? 1 : 5))).toEqual({ fit: 0, sol: [2, 3, 0, 4, 1] });
         expect2(() => $sol2).toEqual({ sol: [2, 1, 4, 0, 3] });
 
+        //! test crossover2();;
+        const $sol2A: Solution = { sol: [2, 1, 4, 0, 3] };
+        const $sol2B: Solution = { sol: [4, 3, 0, 2, 1] };
+        expect2(() => $tsm.crossover2($sol2A, $sol2B, i => [0][i]), 'A').toEqual('@x[0] is out of range[1,4]');
+        expect2(() => $tsm.crossover2($sol2A, $sol2B, i => [1][i]), 'A').toEqual({ A: [2, 3, 0, 1, 4] });
+        expect2(() => $tsm.crossover2($sol2A, $sol2B, i => [2][i]), 'A').toEqual({ A: [2, 1, 0, 4, 3] });
+        expect2(() => $tsm.crossover2($sol2A, $sol2B, i => [3][i]), 'A').toEqual({ A: [2, 1, 4, 3, 0] });
+        expect2(() => $tsm.crossover2($sol2A, $sol2B, i => [4][i]), 'A').toEqual({ A: [2, 1, 4, 0, 3] });
+        expect2(() => $tsm.crossover2($sol2A, $sol2B, i => [5][i]), 'A').toEqual('@x[5] is out of range[1,4]');
+
+        expect2(() => $tsm.crossover2($sol2A, $sol2B, i => [2][i]), 'A').toEqual({ A: [2, 1, 0, 4, 3] });
+        expect2(() => $tsm.crossover2($sol2A, $sol2B, i => [2][i]), 'B').toEqual({ B: [4, 0, 3, 2, 1] });
+        expect2(() => $tsm.crossover2($sol2A, $sol2B, i => [2][i]), 'C').toEqual({ C: [4, 3, 0, 2, 1] });
+        expect2(() => $tsm.crossover2($sol2A, $sol2B, i => [2][i]), 'D').toEqual({ D: [0, 2, 1, 4, 3] });
+
         //! test move2();
         const $sol3: Solution = { sol: [2, 1, 4, 0, 3] };
         expect2(() => $tsm.move2($sol3, i => [0, 0, 0][i])).toEqual({ fit: 0, sol: [2, 1, 4, 0, 3] });
