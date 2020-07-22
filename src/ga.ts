@@ -628,16 +628,17 @@ export class TravelingSalesMan {
         if (!(left < right) || left < 0) throw new Error(`@left[${left}] must be less than @right[${right}]`);
         deep = deep || 0;
         const { sol } = thiz;
-        const LEN = right - left;
-        //! EOF
+        //! make window
+        const WIN = sol.slice(left + 1, right + 1); // make buffer
+        const LEN = WIN.length;
+        // _inf(NS, `> win@${deep}[${left}:${right}] =`, WIN.join(', '));
+
+        //! end of recursive.
         if (LEN <= 1) {
             if (!this.validate({ sol })) throw new Error(`invalid sol:${sol.join(' ')}`);
             const fit = this.travels(sol);
             return { fit, sol };
         }
-        //! make window
-        const WIN = sol.slice(left + 1, right + 1); // make buffer
-        // _inf(NS, `> win@${deep}[${left}:${right}] =`, WIN.join(', '));
 
         //! enumerate all set of window.
         const get = (j: number) => WIN[j >= LEN ? j - LEN : j];
