@@ -173,5 +173,6 @@ describe('gs', () => {
         expect2(() => $tsm2.find(10, 50)).toEqual({ fit: 4, sol: [0, 2, 1, 3] });
 
         expect2(() => $tsm2.findRoute(10, 50)).toEqual({ cost: 4, route: [1, 3, 2, 4] });
+        expect2(() => $tsm2.findDeep()).toEqual({ fit: 4, sol: [0, 2, 1, 3] });
     });
 });

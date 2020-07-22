@@ -28,12 +28,22 @@ export const main = (argv: string[]) => {
     const epoch = getRunParam('epo', 50) as number;
     const min = getRunParam('min', 0) as number;
     const max = getRunParam('max', 1) as number;
-    _inf(NS, `! conf =`, { name, pop, gen, epoch, min, max });
+    const deep = getRunParam('deep', 0) as number; // flag to find by deep()
+    _inf(NS, `! conf =`, $U.json({ name, pop, gen, epoch, min, max }));
 
     //! load tsp
     const $tsp = loaodTsp(name);
     _log(NS, `> tsp.name =`, $tsp.name);
     _log(NS, `> tsp.length =`, $tsp.nodes.length);
+
+    //! search in deep.
+    if (deep) {
+        _inf(NS, `! find by deep search`);
+        const $tsm = new TravelingSalesMan($tsp.nodes);
+        const best = $tsm.findDeep();
+        _inf(NS, `> best.fit[${Math.round(best.fit * 100) / 100}] =`, best.sol.slice(0, 16).join(', '));
+        saveJsonSync('data/best-deep.json', best);
+    }
 
     //! create TravelingSalesMan
     const fn = (n: number) => (n < 10 ? '000' : n < 100 ? '00' : n < 1000 ? '0' : '') + `${n}`;

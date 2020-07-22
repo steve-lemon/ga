@@ -544,4 +544,60 @@ export class TravelingSalesMan {
         // _inf(`! routes =`, cities.join(', '));
         return { cost: fit, route: cities };
     };
+
+    /**
+     * find by exsuatic search
+     *
+     * @param thiz current route solution.
+     * @param left left route to enumerate.
+     */
+    public findDeep = (
+        thiz?: Solution,
+        left?: Solution,
+        deep?: number,
+        counts?: number[],
+        best?: Solution,
+    ): Solution => {
+        const MAX = this.cities.length;
+        thiz = thiz || { fit: 0, sol: [] };
+        left = left || { fit: 0, sol: range(0, MAX) };
+        deep = deep || 0;
+        counts = counts || Array.from(Array(MAX + 1)).map(() => 0);
+        best =
+            best ||
+            (() => {
+                const sol = this.randomSol(MAX);
+                const fit = this.fitness(sol);
+                return { ...sol, fit };
+            })();
+        counts[deep]++; // increase current.
+
+        //! condition of EOF.
+        const LEN = (left.sol && left.sol.length) || 0;
+        if (!LEN) {
+            thiz.fit = this.travels(thiz.sol);
+            return thiz;
+        }
+
+        //! enumerate all elems in list
+        // let best: Solution = null;
+        for (let i = 0; i < LEN; i++) {
+            const next = [...thiz.sol, left.sol[i]];
+            const curr = this.findDeep(
+                { fit: 0, sol: next },
+                { fit: 0, sol: left.sol.slice(0, i).concat(left.sol.slice(i + 1)) },
+                deep + 1,
+                counts,
+                best,
+            );
+            best = curr.fit < best.fit ? curr : best;
+        }
+
+        //! print out at deep = len - 100;
+        const fn = (i: number) => Math.round(i * 100) / 100;
+        if (deep == MAX - 9) _log(NS, `> count@${deep}[${fn(best.fit)}] =`, counts.join(' '));
+
+        //! returns best..
+        return best;
+    };
 }
