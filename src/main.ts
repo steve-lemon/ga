@@ -11,6 +11,10 @@ const NS = $U.NS('main', 'yellow');
 
 /**
  * main function.
+ *
+ * ```sh
+ * $ node . -pop 512 -gen 512 -epo 350 -max 500 -min 5
+ * ```
  * @param argv cli arguments.
  */
 export const main = (argv: string[]) => {
@@ -22,8 +26,9 @@ export const main = (argv: string[]) => {
     const pop = getRunParam('pop', 20) as number;
     const gen = getRunParam('gen', 50) as number;
     const epoch = getRunParam('epo', 50) as number;
+    const min = getRunParam('min', 0) as number;
     const max = getRunParam('max', 1) as number;
-    _inf(NS, `! conf =`, { name, pop, gen, epoch, max });
+    _inf(NS, `! conf =`, { name, pop, gen, epoch, min, max });
 
     //! load tsp
     const $tsp = loaodTsp(name);
@@ -32,7 +37,7 @@ export const main = (argv: string[]) => {
 
     //! create TravelingSalesMan
     const fn = (n: number) => (n < 10 ? '000' : n < 100 ? '00' : n < 1000 ? '0' : '') + `${n}`;
-    for (let n = 0; n < max; n++) {
+    for (let n = min; n < max; n++) {
         const $tsm = new TravelingSalesMan($tsp.nodes);
         $tsm.$best.name = `data/best-${fn(n)}.json`;
         for (let i = 1; i <= epoch; i++) {
