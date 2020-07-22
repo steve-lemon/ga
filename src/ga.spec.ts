@@ -162,6 +162,16 @@ describe('gs', () => {
         expect2(() => $tsm.cleanup(pops2).map(_ => _.sol)).toEqual([[1,2], [3,4], [1,3], [2,5]]);
         /* eslint-enable prettier/prettier */
 
+        expect2(() => $tsm.validate({ sol: [] })).toEqual('.sol is empty');
+        expect2(() => $tsm.validate({ sol: [0] })).toEqual(true);
+        expect2(() => $tsm.validate({ sol: [1] })).toEqual('sol[1] is out of range:0~0');
+        expect2(() => $tsm.validate({ sol: [1, 0] })).toEqual(true);
+        expect2(() => $tsm.validate({ sol: [0, 1] })).toEqual(true);
+        expect2(() => $tsm.validate({ sol: [0, 0, 1] })).toEqual(false);
+        expect2(() => $tsm.validate({ sol: [0, 1, 1] })).toEqual(false);
+        expect2(() => $tsm.validate({ sol: [0, 1, 2] })).toEqual(true);
+        expect2(() => $tsm.validate({ sol: [0, 2, 3] })).toEqual('sol[3] is out of range:0~2');
+
         //! test find() from grid
         const samples: number[][] = ['1,0,0', '2,1,1', '3,1,0', '4,0,1'].map(_ => _.split(',').map(_ => $U.N(_)));
         const $tsm2 = new TravelingSalesMan(samples);
@@ -174,5 +184,12 @@ describe('gs', () => {
 
         expect2(() => $tsm2.findRoute(10, 50)).toEqual({ cost: 4, route: [1, 3, 2, 4] });
         expect2(() => $tsm2.findDeep()).toEqual({ fit: 4, sol: [0, 2, 1, 3] });
+
+        expect2(() => $tsm2.shorten({ sol: [0, 1, 2, 3] }, 0, 0)).toEqual('@left[0] must be less than @right[0]');
+        expect2(() => $tsm2.shorten({ sol: [0, 1, 2, 3] }, 0, 1), 'sol').toEqual({ sol: [0, 1, 2, 3] });
+        expect2(() => $tsm2.shorten({ sol: [0, 1, 2, 3] }, 0, 2), 'sol').toEqual({ sol: [0, 2, 1, 3] });
+        expect2(() => $tsm2.shorten({ sol: [0, 1, 2, 3] }, 0, 3), 'sol').toEqual({ sol: [0, 2, 1, 3] });
+        expect2(() => $tsm2.shorten({ sol: [0, 3, 1, 2] }, 0, 3), 'sol').toEqual({ sol: [0, 2, 1, 3] });
+        expect2(() => $tsm2.shorten({ sol: [0, 1, 3, 2] }, 0, 3), 'sol').toEqual({ sol: [0, 2, 1, 3] });
     });
 });

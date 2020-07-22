@@ -596,8 +596,60 @@ export class TravelingSalesMan {
         //! print out at deep = len - 100;
         const fn = (i: number) => Math.round(i * 100) / 100;
         if (deep == MAX - 9) _log(NS, `> count@${deep}[${fn(best.fit)}] =`, counts.join(' '));
+        best.sol = this.reorder(best.sol);
 
         //! returns best..
         return best;
     };
+
+    /**
+     * validate if sol has full route
+     */
+    public validate($sol: Solution): boolean {
+        const { sol } = $sol;
+        const LEN = (sol && sol.length) || 0;
+        if (!LEN) throw new Error(`.sol is empty`);
+        const ranges = range(0, LEN).map(() => 0);
+        sol.forEach(i => {
+            if (i >= LEN) throw new Error(`sol[${i}] is out of range:0~${LEN - 1}`);
+            ranges[i]++;
+        });
+        const invalids = ranges.filter(n => n != 1);
+        return invalids.length > 0 ? false : true;
+    }
+
+    /**
+     * shorten the region from left to right index
+     * @param sol   the current solution
+     * @param left  left index
+     * @param right right index.
+     */
+    public shorten(thiz: Solution, left: number, right: number, best?: Solution, deep?: number): Solution {
+        if (!(left < right) || left < 0) throw new Error(`@left[${left}] must be less than @right[${right}]`);
+        deep = deep || 0;
+        const { sol } = thiz;
+        const LEN = right - left;
+        //! EOF
+        if (LEN <= 1) {
+            if (!this.validate({ sol })) throw new Error(`invalid sol:${sol.join(' ')}`);
+            const fit = this.travels(sol);
+            return { fit, sol };
+        }
+        //! make window
+        const WIN = sol.slice(left + 1, right + 1); // make buffer
+        // _inf(NS, `> win@${deep}[${left}:${right}] =`, WIN.join(', '));
+
+        //! enumerate all set of window.
+        const get = (j: number) => WIN[j >= LEN ? j - LEN : j];
+        for (let i = 0; i < LEN; i++) {
+            WIN.forEach((n, j) => (thiz.sol[left + j + 1] = get(i + j)));
+            const N = this.shorten(thiz, left + 1, right, best, deep + 1);
+            best = best && best.fit < N.fit ? best : { fit: N.fit, sol: [...N.sol] }; //! WARN! make copy.
+        }
+        // _inf(NS, `> set [${left + 1}] :=`, old, `<-`, thiz.sol[left + 1]);
+
+        //! returns best.
+        if (!deep) best.sol = this.reorder(best.sol);
+        return best;
+    }
 }
