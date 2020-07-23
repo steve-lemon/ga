@@ -116,7 +116,9 @@ export const find = (pop: number, gen: number): Solution => {
     return best;
 };
 
-//! load json in sync.
+/**
+ * load json in sync.
+ */
 export const loadJsonSync = (name: string, def: any = {}) => {
     name = !name.startsWith('./') ? `./${name}` : name;
     try {
@@ -129,7 +131,11 @@ export const loadJsonSync = (name: string, def: any = {}) => {
     }
 };
 
-//! save json in sync.
+/**
+ * save json in sync.
+ * @param name  file-name
+ * @param data  json data to save
+ */
 export const saveJsonSync = (name: string, data: any = {}) => {
     name = !name.startsWith('./') ? `./${name}` : name;
     try {
@@ -141,6 +147,10 @@ export const saveJsonSync = (name: string, data: any = {}) => {
     }
 };
 
+/**
+ * load `.tsp` file
+ * @param name  name of file.
+ */
 export const loaodTsp = (name: string): TspInfo => {
     name = !name.startsWith('./') ? `./data/${name}${name.endsWith('.tsp') ? '' : '.tsp'}` : name;
     try {

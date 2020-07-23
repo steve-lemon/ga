@@ -1,6 +1,6 @@
 # ga
 
-genetic algorithm experimental
+Genetic Algorithm experimental
 
 
 ## LICENSE
