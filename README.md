@@ -38,9 +38,9 @@ Genetic Algorithm experimental
 1. Make random population with `randomSol()`
 1. [Elitism] make offsprings from `best` solution.
 1. Select 2 parents by tournament.
-1. Make crossover at random position (see `Self Crossover`).
-1. Make offsprings by 4 combination (see `Mate Crossover`).
-1. Mutate each offsprings (see `Mutate`).
+1. Make crossover at random position (see [Self Crossover](#self-crossover)).
+1. Make offsprings by 4 combination (see [Mate Crossover](#mate-crossover)).
+1. Mutate each offsprings (see [Mutate](#mutate)).
 1. Add offsprings to population, and remove the duplicated.
 1. Sort by `fitness`, then cut-off population.
 1. Find the best solution.
