@@ -8,6 +8,7 @@
     "build": "npm run build-ts",
     "build-ts": "tsc -v && tsc",
     "watch-ts": "tsc -w",
+    "start":"LS=1 ts-node src/index.ts",
     "!test": "------- run self-test with jest -----",
     "test": "LS=1 jest --config=jest.config.json",
     "test:dev": "LS=1 jest --config=jest.config.json --watchAll",

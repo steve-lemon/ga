@@ -1,0 +1,13 @@
+NAME: test
+TYPE: TSP
+COMMENT: test sample for self-test
+DIMENSION: 5
+EDGE_WEIGHT_TYPE: GEO
+EDGE_WEIGHT_FORMAT: FUNCTION
+NODE_COORD_SECTION
+   1  10.0   10.0
+   2  10.0   20.0
+   3  15.0   25.0
+   4  20.0   20.0
+   5  20.0   10.0
+EOF

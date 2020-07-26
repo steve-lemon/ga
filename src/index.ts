@@ -5,7 +5,10 @@
  * @author      Steve <steve@lemoncloud.io>
  * @date        2020-07-17 initial version.
  */
+import fs from 'fs';
+
 const _log = console.log;
+const _err = console.error;
 
 //! check if called directly...
 const isDirectCall = require.main === module;
@@ -21,6 +24,14 @@ export * from './ga';
 
 //! execute main function.
 if (isDirectCall) {
-    _log('! run main()....');
-    main(process.argv);
+    main(process.argv)
+        .then($sol => {
+            if ($sol) {
+                _log($sol.cost);
+                fs.writeFileSync('./solution.csv', $sol.route.join('\n') + '\n');
+            }
+        })
+        .catch(e => {
+            _err(e);
+        });
 }

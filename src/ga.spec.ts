@@ -53,6 +53,20 @@ describe('gs', () => {
         expect2(() => $tsp.nodes[0]).toEqual([1, 9860, 14152]);
         expect2(() => $tsp.nodes[1]).toEqual([2, 9396, 14616]);
         expect2(() => $tsp.nodes[126]).toEqual([127, 3248, 14152]);
+
+        //! test data loading..
+        const $tsp2 = loaodTsp('burma14.tsp');
+        expect2(() => ({ ...$tsp2 }), '!nodes').toEqual({
+            name: 'burma14',
+            comment: '14-Staedte in Burma (Zaw Win)',
+            type: 'TSP',
+            dimension: 14,
+            edge_weight_type: 'GEO',
+        });
+
+        expect2(() => $tsp2.nodes[0]).toEqual([1, 16.47, 96.1]);
+        expect2(() => $tsp2.nodes[1]).toEqual([2, 16.47, 94.44]);
+        expect2(() => $tsp2.nodes[13]).toEqual([14, 20.09, 94.55]);
     });
 
     it('should pass TravelingSalesMan', () => {

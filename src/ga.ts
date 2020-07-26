@@ -153,6 +153,8 @@ export const saveJsonSync = (name: string, data: any = {}) => {
  */
 export const loaodTsp = (name: string): TspInfo => {
     name = !name.startsWith('./') ? `./data/${name}${name.endsWith('.tsp') ? '' : '.tsp'}` : name;
+    const is = (nm: string, line: string) => line.startsWith(`${nm}:`) || line.startsWith(`${nm} :`);
+    const val = (line: string) => line.substring(line.indexOf(':') + 1).trim();
     try {
         const rawdata = fs.readFileSync(name).toString();
         const lines = rawdata.split(`\n`);
@@ -165,16 +167,16 @@ export const loaodTsp = (name: string): TspInfo => {
             if (line == 'NODE_COORD_SECTION') inData = true;
             else if (line == 'EOF') inData = false;
             else if (inData) {
-                const re = /([0-9]+)\s+([0-9]+)\s+([0-9]+)/.exec(line);
-                if (re[0]) {
+                const re = /([0-9\.]+)\s+([0-9\.]+)\s+([0-9\.]+)/.exec(line);
+                if (re && re[0]) {
                     const node = re.slice(1).map(_ => Number.parseFloat(_));
                     nodes.push(node);
                 }
-            } else if (line.startsWith('NAME :')) ret.name = line.split(' : ', 2)[1];
-            else if (line.startsWith('COMMENT :')) ret.comment = line.split(' : ', 2)[1];
-            else if (line.startsWith('TYPE :')) ret.type = line.split(' : ', 2)[1];
-            else if (line.startsWith('DIMENSION :')) ret.dimension = $U.N(line.split(' : ', 2)[1], 0);
-            else if (line.startsWith('EDGE_WEIGHT_TYPE :')) ret.edge_weight_type = line.split(' : ', 2)[1];
+            } else if (is('NAME', line)) ret.name = val(line);
+            else if (is('COMMENT', line)) ret.comment = val(line);
+            else if (is('TYPE', line)) ret.type = val(line);
+            else if (is('DIMENSION', line)) ret.dimension = $U.N(val(line), 0);
+            else if (is('EDGE_WEIGHT_TYPE', line)) ret.edge_weight_type = val(line);
         }
         return ret;
     } catch (e) {
@@ -468,8 +470,10 @@ export class TravelingSalesMan {
      *
      * @param popCount count of population
      * @param genCount count of generation
+     * @param fitCount count of fitness().
      */
-    public find = (popCount: number, genCount: number): Solution => {
+    public find = (popCount: number, genCount: number, fitCount?: number): Solution => {
+        fitCount = fitCount === undefined ? -1 : fitCount;
         const LEN = this.cities.length;
         const K = 8;
         const EPSILON = 2.0 / LEN;
@@ -478,7 +482,10 @@ export class TravelingSalesMan {
         const $last = { best: this.$best.load() };
 
         //! operators
-        const fitness = (sol: Solution) => ({ fit: this.fitness(sol), sol: this.reorder(sol.sol) });
+        const fitness = (sol: Solution) => {
+            if (fitCount > 0) fitCount -= 1;
+            return { fit: this.fitness(sol), sol: this.reorder(sol.sol) };
+        };
         const crossover = (sol: Solution) => this.crossover(sol);
         const crossover2 = (p1: Solution, p2: Solution) => this.crossover2(p1, p2);
         const mutate = (sol: Solution, r: number = 1) => this.mutate(sol, EPSILON * r);
@@ -490,7 +497,11 @@ export class TravelingSalesMan {
             .map($s => fitness($s));
 
         //! loop until generations.
-        for (let g = 0; g < genCount; g++) {
+        for (let gen = 0; ; gen++) {
+            //! determine break condition.
+            if (genCount && gen >= genCount) break;
+            if (!fitCount) break;
+
             //! init offspring with best's mutants
             const offsprings: Solution[] = range(4).map(i => {
                 const b = crossover($last.best);
@@ -520,7 +531,7 @@ export class TravelingSalesMan {
             population = population.concat(offsprings);
 
             //! remove the duplicated pops.
-            if (!(g % 10)) population = this.cleanup(population);
+            if (!(gen % 10)) population = this.cleanup(population);
 
             //! order by .fit asc
             population = population.sort((a, b) => a.fit - b.fit);
@@ -533,7 +544,8 @@ export class TravelingSalesMan {
                 const $old = $last.best;
                 const $new = population[0];
                 const fn = (i: number) => Math.round(i * 100) / 100;
-                _log(NS, `! best-route@${g} :=\t`, fn($new.fit), `\td:${fn($new.fit - $old.fit)} \t<-${fn($old.fit)}`);
+                // eslint-disable-next-line prettier/prettier
+                _log(NS, `! best-route@${gen} :=\t`, fn($new.fit), `\td:${fn($new.fit - $old.fit)} \t<-${fn($old.fit)}`);
                 $last.best = { fit: $new.fit, sol: [...$new.sol] };
                 //! check if best has zero fit.
                 if (!$last.best.fit) throw new Error(`.fit is invalid! - sol:${$last.best.sol}`);
