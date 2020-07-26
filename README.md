@@ -33,15 +33,16 @@ Genetic Algorithm experimental
 
 **[Overview]**
 
-1. read `.tsp` file, and build distance map between each points.
-1. make random population with `randomSol()`
+1. Read `.tsp` file, and build distance map between each points.
+1. Make random population with `randomSol()`
 1. [Elitism] make offsprings from `best` solution.
-1. select 2 parents by tournament.
-1. make crossover at random position.
-1. make offsprings by 4 combination, and mutate.
-1. add offsprings to population, and remove the duplicated.
-1. sort by `fitness`, then cut-off population.
-1. find the best solution.
+1. Select 2 parents by tournament.
+1. Make crossover at random position (see `Self Crossover`).
+1. Make offsprings by 4 combination (see `Mate Crossover`).
+1. Mutate each offsprings (see `Mutate`).
+1. Add offsprings to population, and remove the duplicated.
+1. Sort by `fitness`, then cut-off population.
+1. Find the best solution.
 
 
 ## Crossover
@@ -52,6 +53,8 @@ Genetic Algorithm experimental
 ### Self Crossover
 
 select the random range from A to B, then reverse the range.
+
+![](assets/crossover.png)
 
 ```ts
     public crossover = ($sol: Solution, rnd?: (i: number) => number): Solution => {
@@ -76,6 +79,8 @@ select the random range from A to B, then reverse the range.
 
 select the random position, then swap between 2 solutions.
 
+![](assets/crossover2.png)
+
 ```ts
     public crossover2 = (p1: Solution, p2: Solution, rnd?: (i: number) => number) => {
         const { sol: org } = p1;
@@ -92,9 +97,11 @@ select the random position, then swap between 2 solutions.
     };
 ```
 
-### Mutate
+## Mutate
 
 swap by neighbor pairs with `epsilon` probability. 
+
+![](assets/mutate.png)
 
 ```ts
     public mutate = ($sol: Solution, epsilon: number, rnd?: (i: number) => number): Solution => {
@@ -122,6 +129,13 @@ swap by neighbor pairs with `epsilon` probability.
 ```
 
 
+
+
 ## LICENSE
 
 [MIT](http://opensource.org/licenses/MIT)
+
+
+## Author
+
+[Steve](steve@lemoncloud.io)
