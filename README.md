@@ -2,7 +2,8 @@
 
 Genetic Algorithm experimental
 
-- solving TST(Travelling Salesman Problem) by using GA.
+- Solving TSP(Travelling Salesman Problem) by using GA.
+- The sample tsp samples can be found via [MP-TESTDATA](http://elib.zib.de/pub/mp-testdata/tsp/tsplib/tsp/index.html)
 
 
 ## How To Run
