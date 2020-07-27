@@ -35,15 +35,16 @@ Genetic Algorithm experimental
 **[Overview]**
 
 1. Read `.tsp` file, and build distance map between each points.
-1. Make random population with `randomSol()`
-1. [Elitism] make offsprings from `best` solution.
-1. Select 2 parents by tournament.
-1. Make crossover at random position (see [Self Crossover](#self-crossover)).
-1. Make offsprings by 4 combination (see [Mate Crossover](#mate-crossover)).
+1. Make random populations with `randomSol()`
+1. [_Elitism_] make some offsprings from `best` solution.
+1. Select 2 parents by tournament (K=8).
+1. Make 2 offsprings by crossover & move of each parents (see [Self Crossover](#self-crossover)).
+1. Make 4 offsprings by combination of parents (see [Mate Crossover](#mate-crossover)).
 1. Mutate each offsprings (see [Mutate](#mutate)).
-1. Add offsprings to population, and remove the duplicated.
+1. Add offsprings to population, and remove the duplicated route.
 1. Sort by `fitness`, then cut-off population (see [Fitness](#fitness)).
-1. Find the best solution.
+1. Select the `best` solution, and store in json file.
+1. Do loop to `#3` until budget limitation.
 
 
 ### Crossover
