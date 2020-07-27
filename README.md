@@ -24,8 +24,8 @@ Genetic Algorithm experimental
 
 ### Run Arguments
 
-| Name      | Description |
-|--         |--  |
+| Name      | Description   |
+|--         |--             |
 | p         | Number of population per each generation |
 | f         | Budget count of fitness |
 
@@ -157,8 +157,8 @@ calculate the total traveling distance of instance. (use the internal distance m
 
 ## LICENSE
 
-[MIT](http://opensource.org/licenses/MIT)
-
+GA is licensed under the MIT License.
+See [LICENSE](LICENSE) for full license text.
 
 ## Author
 
