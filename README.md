@@ -8,13 +8,13 @@ Genetic Algorithm experimental
 
 ## How To Run
 
-* install the required modules
+* install the required modules  (`node` and `npm` is required!)
 
     ```sh
     $ npm install
     ```
 
-* run GA to find TSP (see `Run Arguments` Section)
+* run GA to find TSP route (see `Run Arguments` Section)
 
     ```sh
     #WARN! must add '--' for arguments.
@@ -42,16 +42,16 @@ Genetic Algorithm experimental
 1. Make offsprings by 4 combination (see [Mate Crossover](#mate-crossover)).
 1. Mutate each offsprings (see [Mutate](#mutate)).
 1. Add offsprings to population, and remove the duplicated.
-1. Sort by `fitness`, then cut-off population.
+1. Sort by `fitness`, then cut-off population (see [Fitness](#fitness)).
 1. Find the best solution.
 
 
-## Crossover
+### Crossover
 
 - exchange the range of route with the different position.
 
 
-### Self Crossover
+#### Self Crossover
 
 select the random range from A to B, then reverse the range.
 
@@ -76,11 +76,12 @@ select the random range from A to B, then reverse the range.
 ```
 
 
-### Mate Crossover
+#### Mate Crossover
 
 select the random position, then swap between 2 solutions.
 
 ![](assets/crossover2.png)
+
 
 ```ts
     public crossover2 = (p1: Solution, p2: Solution, rnd?: (i: number) => number) => {
@@ -98,7 +99,7 @@ select the random position, then swap between 2 solutions.
     };
 ```
 
-## Mutate
+### Mutate
 
 swap by neighbor pairs with `epsilon` probability. 
 
@@ -129,6 +130,27 @@ swap by neighbor pairs with `epsilon` probability.
     };
 ```
 
+### Fitness
+
+calculate the total travel distance in loop.
+
+```ts
+    public fitness = (indices: number[]) =>
+        indices
+            .map((a, i) => {
+                const b = !i ? indices[indices.length - 1] : indices[i - 1]; //! point to the very first node if is last.
+                return this.distByIndex(a, b);
+            })
+            .reduce((T, d) => T + d, 0);
+```
+
+## Result
+
+
+| TSP       | Dimension | Best Route    |
+|--         |--         |--             |
+| burma14   | 14        | 33.92         |
+| bier127   | 127       | 118325.39     |
 
 
 

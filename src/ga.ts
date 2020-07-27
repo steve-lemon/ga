@@ -270,11 +270,7 @@ export class TravelingSalesMan {
     public travels = (indices: number[]) =>
         indices
             .map((a, i) => {
-                //! get previous city (or, the last one).
                 const b = !i ? indices[indices.length - 1] : indices[i - 1]; //! point to the very first node if is last.
-                // const A = this.cities[a];
-                // const B = this.cities[b];
-                // return A && B ? this.distance(A, B) : 0;
                 return this.distByIndex(a, b);
             })
             .reduce((T, d) => T + d, 0);
