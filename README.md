@@ -146,11 +146,12 @@ calculate the total travel distance in loop.
 ## Result
 
 
-| TSP       | Dimension | Best Route    |
-|--         |--         |--             |
+| TSP       | Dimension | Best Travel Distance(*) |
+| ---       |   :---:   |          ---: |
 | burma14   | 14        | 33.92         |
 | bier127   | 127       | 118325.39     |
 
+* NOTE _it would **NOT** be the global best_.
 
 
 ## LICENSE
