@@ -53,7 +53,7 @@ Genetic Algorithm experimental
 
 #### Self Crossover
 
-select the random range from A to B, then reverse the range.
+select the random range from A to B of single instance, then reverse and move by random position.
 
 ![](assets/crossover.png)
 
@@ -78,7 +78,7 @@ select the random range from A to B, then reverse the range.
 
 #### Mate Crossover
 
-select the random position, then swap between 2 solutions.
+select the random position, then swap between 2 instances in order to generate offsprings (x4).
 
 ![](assets/crossover2a.png)
 
@@ -101,7 +101,7 @@ select the random position, then swap between 2 solutions.
 
 ### Mutate
 
-swap by neighbor pairs with `epsilon` probability. 
+swap by neighbor pairs with `epsilon` probability in single instance.
 
 ![](assets/mutate.png)
 
@@ -131,7 +131,7 @@ swap by neighbor pairs with `epsilon` probability.
 
 ### Fitness
 
-calculate the total travel distance in loop.
+calculate the total traveling distance of instance. (use the internal distance metrics).
 
 ```ts
     public fitness = (indices: number[]) =>
