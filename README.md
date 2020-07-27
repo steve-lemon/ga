@@ -80,7 +80,7 @@ select the random range from A to B, then reverse the range.
 
 select the random position, then swap between 2 solutions.
 
-![](assets/crossover2.png)
+![](assets/crossover2a.png)
 
 
 ```ts
@@ -112,11 +112,10 @@ swap by neighbor pairs with `epsilon` probability.
         const sol = [...org];
         const LEN = sol.length;
         const len = Math.floor(LEN / 2);
-        const off = rnd(0) < 0.5 ? 1 : 0; // offset..
+        const off = rnd(0) < 0.5 ? 1 : 0; // offset of odd/even.
         range(len).forEach(i => {
             const r = rnd(i);
             if (r < epsilon) {
-                //! switch pair.
                 const j = i * 2 + off;
                 const L = sol.slice(j, j + 2);
                 if (L.length == 2) {
