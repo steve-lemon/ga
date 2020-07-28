@@ -95,7 +95,8 @@ export const packArguments = (argv: string[]) => {
     const max = asParam('max', 1) as number;
     const deep = asParam('deep', 0) as number; // flag to find by deep()
     const short = asParam('short', 0) as number; // flag to optimize by short()
-    const param = { ext, name, pop, fit, gen, epo, gap, min, max, deep, short };
+    const best = asParam('best', 0) as number; // flag to show the latest best solution
+    const param = { ext, name, pop, fit, gen, epo, gap, min, max, deep, short, best };
     _inf(NS, `! param =`, $U.json(param));
 
     //! validate param.
@@ -119,7 +120,9 @@ export const main = async (argv: string[]) => {
     _log(NS, '!main()...');
 
     //! get param..
-    const { name, pop, fit, gen, epo, gap, min, max, deep, short } = packArguments(normalizeArguments(argv));
+    const { name, pop, fit, gen, epo, gap, min, max, deep, short, best: showBest } = packArguments(
+        normalizeArguments(argv),
+    );
 
     //! load tsp file.
     const file = await downloadFile(name);
@@ -163,7 +166,17 @@ export const main = async (argv: string[]) => {
         }
         $ret.cost = best.fit;
         $ret.route = [...best.sol].map(i => $tsm.cities[i]).map(c => `${c.i}`);
-        return;
+        return $ret;
+    }
+
+    //! show the best solution.
+    if (showBest) {
+        _inf(NS, `! show the latest best solution`);
+        const $tsm = new TravelingSalesMan($tsp.nodes);
+        const best: Solution = loadJsonSync('data/best.json');
+        $ret.cost = best.fit;
+        $ret.route = [...best.sol].map(i => $tsm.cities[i]).map(c => `${c.i}`);
+        return $ret;
     }
 
     //! execute find of TravelingSalesMan by name. from min to max.
