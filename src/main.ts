@@ -189,7 +189,12 @@ export const main = async (argv: string[]) => {
 
             //! update the last best...
             const $org: any = loadJsonSync('data/best.json');
-            if ($org.error || ($org && $org.fit > best.fit && best.fit > 0)) {
+            if (
+                $org.error || // best has error
+                ($org.fit > best.fit && best.fit > 0) || // improved
+                !$org.sol || // missing solution
+                $org.sol.length != best.sol.length // different solution length
+            ) {
                 _inf(NS, `! update last best: ${best.fit || 0} <- ${$org.fit || 0}`);
                 saveJsonSync('data/best.json', best);
                 $ret.cost = best.fit;

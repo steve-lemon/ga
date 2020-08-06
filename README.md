@@ -36,7 +36,7 @@ Genetic Algorithm experimental
 
 1. Read `.tsp` file, and build distance map between each points.
 1. Make random populations with `randomSol()`
-1. [_Elitism_] make some offsprings from `best` solution.
+1. [_Elitism_] make some offsprings from `best` solution. (see `data/best.json`)
 1. Select 2 parents by tournament (K=8).
 1. Make 2 offsprings by crossover & move of each parents (see [Self Crossover](#self-crossover)).
 1. Make 4 offsprings by combination of parents (see [Mate Crossover](#mate-crossover)).
