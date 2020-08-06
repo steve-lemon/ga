@@ -43,5 +43,12 @@
     "tslint": "5.16.0",
     "ttypescript": "^1.5.10",
     "typescript": "^3.9.6"
+  },
+  "engines": {
+    "node": ">=10.8.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:steve-lemon/ga.git"
   }
 }
