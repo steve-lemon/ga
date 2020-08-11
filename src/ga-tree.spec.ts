@@ -6,7 +6,7 @@
  * @date        2020-07-17 initial version.
  */
 import { expect2 } from 'lemon-core';
-import { score } from './ga-tree';
+import { score, fitness } from './ga-tree';
 
 describe('ga-tree', () => {
     it('should pass all', () => {
@@ -30,11 +30,13 @@ describe('ga-tree', () => {
         /* eslint-disable prettier/prettier */
         check({ A: 0 }, { A: 1 }                ).toEqual({ n: 1, l: 0, t: 2, d: 1 }); // root + branch:1
         check({ A: 1 }, { A: 1 }                ).toEqual({ n: 1, l: 1, t: 2, d: 1 });
-        check({ A: 1 }, { A: { B: 1 } }         ).toEqual({ n: 2, l: 0, t: 3, d: 2 });
+        check({ A: 1 }, { A: { B: 1 } }         ).toEqual({ n: 2, l: 0, t: 3, d: 2 }); //! `B` is branch name.
 
-        check({ A: { B: 1 } }, { A: { B: 1 } }  ).toEqual({ n: 2, l: 1, t: 3, d: 2 });
         check({ A: { B: 1 } }, { A: 1 }         ).toEqual({ n: 1, l: 0, t: 2, d: 1 }); //! same branch, but leaf : 1/2 = 0.5
         check({ B: { A: 1 } }, { A: 1 }         ).toEqual({ n: 1, l: 0, t: 3, d: 1 }); //! branch diff : 1/3 = 0.33
+        check({ A: { B: 1 } }, { A: { B: 1 } }  ).toEqual({ n: 2, l: 1, t: 3, d: 2 });
+        check({ A: { B: 1 } }, { A: { B: 2 } }  ).toEqual({ n: 2, l: 0, t: 3, d: 2 });
+        check({ A: { C: 1 } }, { A: { B: 1 } }  ).toEqual({ n: 2, l: 0, t: 4, d: 2 });
 
         //! not matched at all
         check(true              , { A: 1 }      ).toEqual({ n: 1, l: 0, t: 2, d: 1 });
@@ -56,6 +58,10 @@ describe('ga-tree', () => {
         check({ B: undefined }  , { A: 1 }      ).toEqual({ n: 1, l: 0, t: 3, d: 1 });
         check({ B: 1 }          , { A: 1 }      ).toEqual({ n: 1, l: 0, t: 3, d: 1 });
         check({ B: '' }         , { A: 1 }      ).toEqual({ n: 1, l: 0, t: 3, d: 1 });
-        /* eslint-disable prettier/prettier */
+        /* eslint-enable prettier/prettier */
+
+        //! check fitness....
+        expect2(fitness({ A: '' }, { A: 1 })).toEqual(1 + 1.0 / 2);
+        expect2(fitness({ B: '' }, { A: 1 })).toEqual(1 + 1.0 / 3);
     });
 });

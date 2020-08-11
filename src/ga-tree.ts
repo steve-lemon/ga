@@ -32,6 +32,13 @@ export interface GATreeScore {
     d?: number;
 }
 
+/**
+ * calculate the summary of score
+ * @param left      left tree (input)
+ * @param right     right tree (spec)
+ * @param branch    current branch name
+ * @param depth     current tree depth
+ */
 export const score = (left: any, right: any, branch?: string, depth?: number): GATreeScore => {
     depth = depth || 0;
     const t1 = typeof left;
@@ -58,4 +65,12 @@ export const score = (left: any, right: any, branch?: string, depth?: number): G
     }
     if (left === right) return { l: 1, t: 1, d: depth };
     else return { l: 0, t: 1, d: depth };
+};
+
+/**
+ * get fitness value.
+ */
+export const fitness = (left: any, right: any): number => {
+    const { n, l, t } = score(left, right);
+    return n + (1.0 * (n + l)) / (t || 1);
 };
